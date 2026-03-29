@@ -79,19 +79,19 @@ class IA_Player : public Player_Interface {
         return child;
     }
 
-    std::pair<char,std::vector<std::pair<int,int>>> simulate(Hex_Environement state) {
-        std::vector<std::pair<int,int>> played_move;
+    std::pair<char,std::vector<std::tuple<int,int,char>>> simulate(Hex_Environement state) {
+        std::vector<std::tuple<int,int,char>> played_move;
         while(!state.isGameOver()) {
+            char current_player = state.getPlayer();
             auto moves = getAllMoves(state);
             auto move = moves[rand() % moves.size()];
-            played_move.push_back(move);
+            played_move.push_back({move.first,move.second,current_player});
             state.playMove(move.first, move.second);
         }
         return {state.getWinner(), played_move};
     }
 
-    void backpropagate(Node* node, char winner, std::vector<std::pair<int,int>> playedMoves) {
-        std::set<std::pair<int,int>> moveSet(playedMoves.begin(), playedMoves.end());
+    void backpropagate(Node* node, char winner, std::vector<std::tuple<int,int,char>>& playedMoves) {
         while(node != nullptr) {
             node->visits++;
 
@@ -99,15 +99,21 @@ class IA_Player : public Player_Interface {
                 node->wins++;
             }
             for(auto child : node->children) {
-                for(auto move : playedMoves) {
-                    if(moveSet.count({child->moveRow, child->moveCol})){
-                        child->raveVisits++;
+                for(const auto& [r, c, p] : playedMoves) {
 
-                        if(child->player == winner) {
-                            child->raveWins++;
+                    if(child->moveRow == r && child->moveCol == c) {
+
+                        if(child->player == p) {
+
+                            child->raveVisits++;
+
+                            if(p == winner) {
+                                child->raveWins++;
+                            }
                         }
-                    }
 
+                        break; 
+                    }
                 }
             }
             node = node->parent;
