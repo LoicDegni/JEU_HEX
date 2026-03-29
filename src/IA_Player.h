@@ -66,12 +66,17 @@ class IA_Player : public Player_Interface {
         node->untriedMoves.pop_back();
 
         Hex_Environement newState = node->state;
-        newState.playMove(move.first, move.second);
+        bool win = newState.playMove(move.first, move.second);
 
         Node* child = new Node{newState, node};
         child->moveRow = move.first;
         child->moveCol = move.second;
         child->player = node->player == 'X' ? 'O' : 'X';
+
+        if(win) {
+            child->wins +=1000;
+            child->visits += 1;
+        }
 
         child->untriedMoves = getAllMoves(newState);
         node->children.push_back(child);
@@ -84,6 +89,13 @@ class IA_Player : public Player_Interface {
         while(!state.isGameOver()) {
             char current_player = state.getPlayer();
             auto moves = getAllMoves(state);
+            for(auto m : moves) {
+                Hex_Environement temp = state;
+                if(temp.playMove(m.first, m.second)) {
+                    played_move.push_back({m.first, m.second, state.getPlayer()});
+                    return {state.getPlayer(), played_move};
+                }
+            }
             auto move = moves[rand() % moves.size()];
             played_move.push_back({move.first,move.second,current_player});
             state.playMove(move.first, move.second);
