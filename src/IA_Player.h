@@ -19,7 +19,7 @@ class IA_Player : public Player_Interface {
     unsigned int _taille;
 
     struct Node {
-        Hex_Environement& state;
+        Hex_Environement state;
         Node* parent;
         std::vector<Node*> children;
 
@@ -53,6 +53,7 @@ class IA_Player : public Player_Interface {
             double value = (1 - beta) * uct + beta * rave;
             if (value > bestValue) 
             {
+                bestValue = value;
                 best = child;
             }
 
@@ -82,7 +83,7 @@ class IA_Player : public Player_Interface {
         std::vector<std::pair<int,int>> played_move;
         while(!state.isGameOver()) {
             auto moves = getAllMoves(state);
-            auto move = moves[rand()];
+            auto move = moves[rand() % moves.size()];
             played_move.push_back(move);
             state.playMove(move.first, move.second);
         }
@@ -90,6 +91,7 @@ class IA_Player : public Player_Interface {
     }
 
     void backpropagate(Node* node, char winner, std::vector<std::pair<int,int>> playedMoves) {
+        std::set<std::pair<int,int>> moveSet(playedMoves.begin(), playedMoves.end());
         while(node != nullptr) {
             node->visits++;
 
@@ -98,7 +100,7 @@ class IA_Player : public Player_Interface {
             }
             for(auto child : node->children) {
                 for(auto move : playedMoves) {
-                    if(child->moveRow == move.first && child->moveCol == move.second) {
+                    if(moveSet.count({child->moveRow, child->moveCol})){
                         child->raveVisits++;
 
                         if(child->player == winner) {
