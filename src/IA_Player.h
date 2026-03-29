@@ -9,6 +9,8 @@
 #include <random>
 #include <chrono>
 #include <algorithm>
+#include <iostream>
+#include <cstdio>  
 
 #include "Hex_Environement.h"
 
@@ -85,17 +87,26 @@ class IA_Player : public Player_Interface {
     }
 
     std::pair<char,std::vector<std::tuple<int,int,char>>> simulate(Hex_Environement state) {
-        std::vector<std::tuple<int,int,char>> played_move;
+        std::vector<std::tuple<int,int,char>> played_move;  //RAVE 
         while(!state.isGameOver()) {
             char current_player = state.getPlayer();
             auto moves = getAllMoves(state);
+
+            // si dans les move a cote j'ai un move gagnant je le retourne!
             for(auto m : moves) {
                 Hex_Environement temp = state;
                 if(temp.playMove(m.first, m.second)) {
-                    played_move.push_back({m.first, m.second, state.getPlayer()});
-                    return {state.getPlayer(), played_move};
+                    played_move.push_back({m.first, m.second, current_player});  // A modifier pour etre plus performant. Implementer ma propre fonction played_move avec structure union-find. 
+                    return {current_player, played_move};
                 }
             }
+            /**
+             * Sinon, je choisi un move au hazard.
+             * Quels sont le hypothéses qui vont rendre mon IA plus forte.
+             * 
+             * Defense: Agent IA doit toujours être plus proche ou égal de completer une longueur que son adversaire
+             * Attaque: 
+            */
             auto move = moves[rand() % moves.size()];
             played_move.push_back({move.first,move.second,current_player});
             state.playMove(move.first, move.second);
@@ -115,15 +126,11 @@ class IA_Player : public Player_Interface {
 
                     if(child->moveRow == r && child->moveCol == c) {
 
-                        if(child->player == p) {
+                        child->raveVisits++;
 
-                            child->raveVisits++;
-
-                            if(p == winner) {
-                                child->raveWins++;
-                            }
+                        if(p == winner) {
+                            child->raveWins++;
                         }
-
                         break; 
                     }
                 }
@@ -170,15 +177,21 @@ public:
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         Node* root = new Node{hex, nullptr};
         root->player = (hex.getPlayer() == 'X') ? 'O' : 'X';
+        int nb_noeud_selectionner = 0;
+        char buffer[100];
+        std::snprintf(buffer, sizeof(buffer), "Le root->player est: '%c' \nLe _player est : %c\n", root->player, _player);
         root->untriedMoves = getAllMoves(root->state);
 
         auto start = std::chrono::steady_clock::now();
+
+        std::cerr << buffer;
 
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
 
             Node* node = root;
             // 1. SELECTION
             while(node->untriedMoves.empty() && !node->children.empty()) {
+                nb_noeud_selectionner ++;
                 node = select(node);
             }
             // 2. EXPANSION
@@ -190,6 +203,7 @@ public:
             // 4. BACKDROP
             backpropagate(node, result.first, result.second);
         }
+        std::snprintf(buffer, sizeof(buffer), "Le nombre de noeud selectionné par '%c' est : %d\n",root->player, nb_noeud_selectionner);
         Node* best = FindBestChild(root);
         return {best->moveRow, best->moveCol};
     }
