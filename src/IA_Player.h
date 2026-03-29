@@ -71,7 +71,7 @@ class IA_Player : public Player_Interface {
         Node* child = new Node{newState, node};
         child->moveRow = move.first;
         child->moveCol = move.second;
-        child->player = node->state.getPlayer();
+        child->player = node->player == 'X' ? 'O' : 'X';
 
         child->untriedMoves = getAllMoves(newState);
         node->children.push_back(child);
@@ -157,6 +157,7 @@ public:
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         Node* root = new Node{hex, nullptr};
+        root->player = (hex.getPlayer() == 'X') ? 'O' : 'X';
         root->untriedMoves = getAllMoves(root->state);
 
         auto start = std::chrono::steady_clock::now();
