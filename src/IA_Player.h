@@ -324,6 +324,7 @@ class IA_Player : public Player_Interface {
                 maxVisits = child->visits;
                 best = child;
             }
+            child_number++;
         }
         std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : \n" << best->visits ; 
         return best;
