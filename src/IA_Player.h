@@ -280,7 +280,7 @@ class IA_Player : public Player_Interface {
             available.pop_back();
             } while (!uf.hasWinner(pl) && !available.empty());
             if(!uf.hasWinner(pl)){
-                std::cerr << "Erreur: mouvement invalide\n";
+                std::cerr << "Erreur: available list est vide\n";
                 std::exit(EXIT_FAILURE);
             }
         std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
