@@ -77,19 +77,6 @@ public:
         }
     }
 
-    Hex_Environement(const Hex_Environement& other): _withGUI(false), board(other.board) {
-        if (other.playerX) {
-            playerX = std::make_unique<Player_Interface>(*other.playerX);
-        } else {
-            playerX = nullptr;
-        }
-        if (other.playerO) {
-            playerO = std::make_unique<Player_Interface>(*other.playerX);
-        } else {
-            playerO = nullptr;
-        }
-    }
-
     ~Hex_Environement() {
         if(_withGUI) {
             endwin();

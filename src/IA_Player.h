@@ -14,29 +14,154 @@
 
 #include "Hex_Environement.h"
 
+class UnionFind {
+private:
+    std::vector<int> parent;
+    std::vector<int> rank;
 
+    std::vector<bool> occupied;
+    std::vector<char> ownership;
+
+
+    int top_virtual;
+    int bottom_virtual;
+    int left_virtual;
+    int right_virtual;
+
+
+
+    int N;
+
+public:
+    UnionFind(int n) : N(n) {
+        int size = N * N + 4; // +4 virtual nodes
+
+        parent.resize(size);
+        occupied.resize(size);
+        ownership.resize(size,'-');
+        rank.resize(size, 0);
+
+        for (int i = 0; i < size; i++) {
+            parent[i] = i;
+            occupied[i] = false;
+        }
+
+        top_virtual = N * N;
+        bottom_virtual = N * N + 1;
+        left_virtual = N * N + 2;
+        right_virtual = N * N + 3;
+    }
+
+    int id(int r, int c) const {
+        return r * N + c;
+    }
+
+    int find(int x) {
+        if (parent[x] != x)
+            parent[x] = find(parent[x]);
+        return parent[x];
+    }
+
+    void unite(int a, int b) {
+        int ra = find(a);
+        int rb = find(b);
+
+        if (ra == rb) return;
+
+        if (rank[ra] < rank[rb]) {
+            parent[ra] = rb;
+        }
+        else if (rank[ra] > rank[rb]) {
+            parent[rb] = ra;
+        }
+        else {
+            parent[rb] = ra;
+            rank[ra]++;
+        }
+    }
+
+    bool connected(int a, int b) {
+        return find(a) == find(b);
+    }
+
+    void reset() {
+        int size = parent.size();
+        for (int i = 0; i < size; i++) {
+            parent[i] = i;
+            rank[i] = 0;
+        }
+    }
+
+    void applyMoveUF(int r, int c, char player) {
+        int node = id(r, c);
+
+        // directions Hex (6 voisins)
+        int dr[6] = {-1, -1, 0, 0, 1, 1};
+        int dc[6] = {0, 1, -1, 1, -1, 0};
+
+        for (int i = 0; i < 6; i++) {
+            int nr = r + dr[i];
+            int nc = c + dc[i];
+
+            if (nr >= 0 && nr < N && nc >= 0 && nc < N) {
+                if (occupied[id(nr, nc)] && ownership[id(nr, nc)] == player) {
+                    occupied[node] = true;
+                    ownership[node] = player;
+                    unite(node, id(nr, nc));
+                }
+            }
+        }
+
+        // connexions bords
+        if (player == 'O') {
+            if (r == 0) unite(node, top_virtual);
+            if (r == N - 1) unite(node, bottom_virtual);
+        }
+
+        if (player == 'X') {
+            if (c == 0) unite(node, left_virtual);
+            if (c == N - 1) unite(node, right_virtual);
+        }
+    }
+
+    bool isValidMoveUF(int r, int c) {
+        /**
+         * Fonction qui verifie si un move recu est valide.
+         * 
+        */
+       return !occupied[id(r,c)];
+    }
+
+    bool hasWinner(char player) {
+        if (player == 'O') {
+            return connected(top_virtual, bottom_virtual);
+        }
+        else {
+            return connected(left_virtual, right_virtual);
+        }
+    }
+};
 
 class IA_Player : public Player_Interface {
     char _player;
     unsigned int _taille;
+    std::vector< std::tuple<unsigned int, unsigned int, char> > _historique_coups;
 
     struct Node {
-        Hex_Environement state;
-        Node* parent;
+        Node* parent= nullptr;
         std::vector<Node*> children;
+        int moveRow, moveCol;
+        char playerJustMoved;
 
         int visits = 0;
         double wins = 0;
-        // RAVE 
-        int raveVisits = 0;
-        double raveWins = 0;
 
         std::vector<std::pair<int,int>> untriedMoves;
-
-        int moveRow, moveCol;
-        char player;
     };
-    //-------------------DÉFINITION DES FONCTIONS PRIVÉES-------------------//
+    Node* _root = nullptr;
+
+
+    //-------------------MCTS-------------------//
     Node* select(Node* node) {
         double C = 1.41; //(2)^1/2 = 1.1414...
 
@@ -64,80 +189,82 @@ class IA_Player : public Player_Interface {
     }
    
     Node* expand(Node* node) {
-        auto move = node->untriedMoves.back();
+        /**
+         * Fonction qui recoit un noeud courant recupere un mouvement possible
+         * du noeud et creer un noeud enfant avec le mouvement recuperé
+         * 
+         * Return:      Le noeud enfant
+        */
+        auto [row, col] = node->untriedMoves.back();
         node->untriedMoves.pop_back();
 
-        Hex_Environement newState = node->state;
-        bool win = newState.playMove(move.first, move.second);
+        Node* child = new Node();
 
-        Node* child = new Node{newState, node};
-        child->moveRow = move.first;
-        child->moveCol = move.second;
-        child->player = node->player == 'X' ? 'O' : 'X';
+        child->parent = node;
+        child->moveRow = row;
+        child->moveCol = col;
 
-        if(win) {
-            child->wins +=1000;
-            child->visits += 1;
-        }
+        child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
+        child->untriedMoves = node->untriedMoves;
 
-        child->untriedMoves = getAllMoves(newState);
         node->children.push_back(child);
 
         return child;
     }
 
-    std::pair<char,std::vector<std::tuple<int,int,char>>> simulate(Hex_Environement state) {
-        std::vector<std::tuple<int,int,char>> played_move;  //RAVE 
-        while(!state.isGameOver()) {
-            char current_player = state.getPlayer();
-            auto moves = getAllMoves(state);
+    char simulate(Node* node) {
+        UnionFind uf(_taille);
 
-            // si dans les move a cote j'ai un move gagnant je le retourne!
-            for(auto m : moves) {
-                Hex_Environement temp = state;
-                if(temp.playMove(m.first, m.second)) {
-                    played_move.push_back({m.first, m.second, current_player});  // A modifier pour etre plus performant. Implementer ma propre fonction played_move avec structure union-find. 
-                    return {current_player, played_move};
-                }
-            }
-            /**
-             * Sinon, je choisi un move au hazard.
-             * Quels sont le hypothéses qui vont rendre mon IA plus forte.
-             * 
-             * Defense: Agent IA doit toujours être plus proche ou égal de completer une longueur que son adversaire
-             * Attaque: 
-            */
-            auto move = moves[rand() % moves.size()];
-            played_move.push_back({move.first,move.second,current_player});
-            state.playMove(move.first, move.second);
+        std::vector< std::tuple<unsigned int, unsigned int, char> > moves;
+        for (auto &h : _historique_coups) {
+            moves.push_back(h);
         }
-        return {state.getWinner(), played_move};
+
+        std::vector<std::tuple<int,int, char>> path;
+        Node* current = node;
+        while (current->parent != nullptr) {
+            path.push_back({current->moveRow, current->moveCol, current->playerJustMoved});
+            current = current->parent;
+        }
+        std::reverse(path.begin(), path.end());
+
+        moves.insert(moves.end(), path.begin(), path.end());
+
+        for(auto [row,col,pl] : moves){
+            uf.applyMoveUF(row,col,pl);
+        }
+
+        std::vector<std::pair<int,int>> available = node->untriedMoves;
+        char pl = node->playerJustMoved;
+
+        // Debut de la simulation
+        do{
+            pl = (pl == 'X') ? 'O' : 'X';
+            auto [row, col] = available[rand() % available.size()];
+            while(!uf.isValidMoveUF(row,col)) {
+                auto [row, col] = available[rand() % available.size()];
+            }
+            uf.applyMoveUF(row,col,pl);
+        }while(!uf.hasWinner(pl));
+
+        return pl;
     }
 
-    void backpropagate(Node* node, char winner, std::vector<std::tuple<int,int,char>>& playedMoves) {
-        while(node != nullptr) {
-            node->visits++;
+    void backpropagate(Node* node, char winner) {
+        /**
+         * La fonction remonte l'arbre MCTS et mets à jours les noeuds.
+        */
+       while (node != nullptr) {
+        node->visits++;
 
-            if(node->player == winner) {
-                node->wins++;
-            }
-            for(auto child : node->children) {
-                for(const auto& [r, c, p] : playedMoves) {
-
-                    if(child->moveRow == r && child->moveCol == c) {
-
-                        child->raveVisits++;
-
-                        if(p == winner) {
-                            child->raveWins++;
-                        }
-                        break; 
-                    }
-                }
-            }
-            node = node->parent;
+        if (node->playerJustMoved == winner){
+            node->wins++;
         }
+        node = node->parent;
+       }
     }
+    //-------------------MCTS-------------------//
+
 
     Node* FindBestChild(Node* node) {
         Node* best = nullptr;
@@ -154,7 +281,7 @@ class IA_Player : public Player_Interface {
 
     std::vector<std::pair<int,int>> getAllMoves(Hex_Environement& hex) {
         std::vector<std::pair<int,int>> moves;
-
+        // O(n^2)
         for(int i=0; i < _taille; i++) {
             for(int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
@@ -164,34 +291,41 @@ class IA_Player : public Player_Interface {
         }
         return moves;
     }
-     
+
 public:
     IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille) {
         assert(player == 'X' || player == 'O');
     }
 
     void otherPlayerMove(int row, int col) override {
-        // l'autre joueur à joué (row, col)
+        // l'autre joueur à joué (row, col).
+        _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
+
+        if(_root != nullptr) {
+            for(auto child : _root->children) {
+                if(child->moveRow == row && child->moveCol == col) {
+                    _root = child;
+                    _root->parent = nullptr;
+                    return;
+                }
+            }
+            _root = nullptr; //Dans quel cas on ne trouve rien??
+        }
     }
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
-        Node* root = new Node{hex, nullptr};
-        root->player = (hex.getPlayer() == 'X') ? 'O' : 'X';
-        int nb_noeud_selectionner = 0;
-        char buffer[100];
-        std::snprintf(buffer, sizeof(buffer), "Le root->player est: '%c' \nLe _player est : %c\n", root->player, _player);
-        root->untriedMoves = getAllMoves(root->state);
-
         auto start = std::chrono::steady_clock::now();
 
-        std::cerr << buffer;
+        if(_root == nullptr) {
+            _root = new Node();
+            _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
+            _root->untriedMoves = getAllMoves(hex);
+        }
 
+        Node* node = _root;
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
-
-            Node* node = root;
             // 1. SELECTION
             while(node->untriedMoves.empty() && !node->children.empty()) {
-                nb_noeud_selectionner ++;
                 node = select(node);
             }
             // 2. EXPANSION
@@ -199,12 +333,11 @@ public:
                 node = expand(node);
             }
             // 3. SIMULATION
-            auto result = simulate(node->state);
+            char winner = simulate(node);
             // 4. BACKDROP
-            backpropagate(node, result.first, result.second);
+            backpropagate(node,winner);
         }
-        std::snprintf(buffer, sizeof(buffer), "Le nombre de noeud selectionné par '%c' est : %d\n",root->player, nb_noeud_selectionner);
-        Node* best = FindBestChild(root);
+        Node* best = FindBestChild(_root);
         return {best->moveRow, best->moveCol};
     }
 };
