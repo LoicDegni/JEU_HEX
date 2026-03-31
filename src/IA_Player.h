@@ -245,6 +245,7 @@ class IA_Player : public Player_Interface {
             std::cerr << "check point simulation apres applyUF\nLa taille de available est :" <<available.size() << "\nLe nombre de coup aleatoire joue est : " <<nb_coup <<"\n" << std::endl;
             std::cerr << "Le dernier coup joue est : (" << row << "," << col << ")\n" << std::endl;
         } while (!uf.hasWinner(pl));
+        std::cerr << "Le gagnant est : " << pl << std::endl;
 
         return pl;
     }
