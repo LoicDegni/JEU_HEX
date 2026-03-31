@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cstdio>  
+#include <random>
 
 #include "Hex_Environement.h"
 
@@ -154,6 +155,7 @@ class IA_Player : public Player_Interface {
     char _player;
     unsigned int _taille;
     std::vector< std::tuple<unsigned int, unsigned int, char> > _historique_coups;
+    std::mt19937 _random_number_generator;
 
     struct Node {
         Node* parent= nullptr;
@@ -165,9 +167,8 @@ class IA_Player : public Player_Interface {
         double wins = 0;
 
         std::vector<std::pair<int,int>> untriedMoves;
-    };
+    };   
     Node* _root = nullptr;
-
 
     //-------------------MCTS-------------------//
     Node* select(Node* node) {
@@ -237,7 +238,12 @@ class IA_Player : public Player_Interface {
             uf.applyMoveUF(row,col,pl);
         }
 
-        std::vector<std::pair<int,int>> available = node->untriedMoves;
+        std::vector<std::pair<int,int>> available;
+        for (auto &move : node->untriedMoves)
+            if(uf.isValidMoveUF(move.first, move.second))
+                available.push_back(move);
+
+        std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
         char pl = node->playerJustMoved;
         uf.resetNbCoupJoue();
         int nb_coup = 0;
@@ -246,18 +252,11 @@ class IA_Player : public Player_Interface {
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             int row, col;
-            do {
-                auto move = available[rand() % available.size()];
-                row = move.first;
-                col = move.second;
-            } while (!uf.isValidMoveUF(row, col));
-
+            auto move = available[uniform_moves_distribution(_random_number_generator)];
+            row = move.first;
+            col = move.second;
             uf.applyMoveUF(row, col, pl);
-            nb_coup++;
-            //std::cerr << "check point simulation apres applyUF\nLa taille de available est :" <<available.size() << "\nLe nombre de coup aleatoire joue est : " <<nb_coup <<"\n" << std::endl;
-            //std::cerr << "Le nombre de coup joue dans la simulation est : " << nb_coup << "\nLe nombre de coup joue dans UF est :" << uf.getNbCoupJoue() << "\n" << std::endl;
-        } while (!uf.hasWinner(pl));
-        //std::cerr << "Le gagnant est : " << pl << std::endl;
+            } while (!uf.hasWinner(pl));
 
         return pl;
     }
@@ -276,7 +275,6 @@ class IA_Player : public Player_Interface {
        }
     }
     //-------------------MCTS-------------------//
-
 
     Node* FindBestChild(Node* node) {
         Node* best = nullptr;
@@ -305,7 +303,7 @@ class IA_Player : public Player_Interface {
     }
 
 public:
-    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille) {
+    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()) {
         assert(player == 'X' || player == 'O');
     }
 
