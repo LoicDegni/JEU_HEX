@@ -254,8 +254,8 @@ class IA_Player : public Player_Interface {
         for(auto [row,col,pl] : moves){
             uf.applyMoveUF(row,col,pl);
         }
-        std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
-        uf.printBoardUF();
+        //std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
+        //uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
         for (auto &move : node->untriedMoves)
