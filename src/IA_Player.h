@@ -268,7 +268,7 @@ class IA_Player : public Player_Interface {
         char pl = node->playerJustMoved;
 
         // Debut de la simulation
-        std::cerr << "DEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
+        std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
             //std::cerr <<"Avant le coup : " << std::endl;
             //uf.printBoardUF();
@@ -282,7 +282,7 @@ class IA_Player : public Player_Interface {
             std::swap(available[random_index], available.back());
             available.pop_back();
             std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
-            std::cerr <<"Apres le coup : " << std::endl;
+            std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.printBoardUF();
             } while (!uf.hasWinner(pl) && !available.empty());
 
