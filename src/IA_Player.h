@@ -318,12 +318,12 @@ class IA_Player : public Player_Interface {
 
         for(auto child: node->children) {
             if(child->visits > maxVisits) {
-                std::cerr << "NODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits ; 
+                std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : \n" << child->visits ; 
                 maxVisits = child->visits;
                 best = child;
             }
         }
-        std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits ; 
+        std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : \n" << best->visits ; 
         return best;
     }
 
