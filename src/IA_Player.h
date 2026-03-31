@@ -142,6 +142,9 @@ public:
             return connected(left_virtual, right_virtual);
         }
     }
+    void resetNbCoupJoue(){
+        coup_joue = 0;
+    }
     int getNbCoupJoue(){
         return coup_joue;
     }
@@ -233,6 +236,7 @@ class IA_Player : public Player_Interface {
 
         std::vector<std::pair<int,int>> available = node->untriedMoves;
         char pl = node->playerJustMoved;
+        uf.resetNbCoupJoue();
         int nb_coup = 0;
 
         // Debut de la simulation
