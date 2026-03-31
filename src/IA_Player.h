@@ -343,9 +343,21 @@ public:
         assert(player == 'X' || player == 'O');
     }
 
+    void printState() {
+        UnionFind uf(_taille);
+
+        for(auto& [row,col,pl] : _historique_coups){
+            uf.applyMoveUF(row,col,pl);
+        }
+        std::cerr << "TABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
+        uf.printBoardUF();
+
+    }
+
     void otherPlayerMove(int row, int col) override {
         // l'autre joueur à joué (row, col).
         _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
+        printState();
 
         if(_root != nullptr) {
             for(auto child : _root->children) {
