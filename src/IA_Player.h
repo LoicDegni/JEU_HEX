@@ -246,13 +246,13 @@ class IA_Player : public Player_Interface {
         std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
         char pl = node->playerJustMoved;
         uf.resetNbCoupJoue();
-        int nb_coup = 0;
 
         // Debut de la simulation
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             int row, col;
             auto move = available[uniform_moves_distribution(_random_number_generator)];
+            std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << "\n" << std::endl;
             row = move.first;
             col = move.second;
             uf.applyMoveUF(row, col, pl);
