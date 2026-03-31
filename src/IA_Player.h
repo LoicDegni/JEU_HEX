@@ -213,6 +213,9 @@ class IA_Player : public Player_Interface {
     }
 
     char simulate(Node* node) {
+        if (node->untriedMoves.empty()) {
+            return node->playerJustMoved;
+        }
         UnionFind uf(_taille);
 
         std::vector< std::tuple<unsigned int, unsigned int, char> > moves;
