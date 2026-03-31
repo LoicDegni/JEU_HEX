@@ -23,6 +23,8 @@ private:
     std::vector<bool> occupied;
     std::vector<char> ownership;
 
+    std::vector<std::vector<char>> board;
+
 
     int top_virtual;
     int bottom_virtual;
@@ -42,6 +44,7 @@ public:
         occupied.resize(size);
         ownership.resize(size,'-');
         rank.resize(size, 0);
+        board.resize(N, std::vector<char>(N, '-'));
 
         for (int i = 0; i < size; i++) {
             parent[i] = i;
@@ -98,6 +101,7 @@ public:
         int node = id(r, c);
         occupied[node] = true;
         ownership[node] = player;
+        board[r][c] = player;
         coup_joue++;
 
         // directions Hex (6 voisins)
@@ -143,11 +147,24 @@ public:
             return connected(left_virtual, right_virtual);
         }
     }
+   
     void resetNbCoupJoue(){
         coup_joue = 0;
     }
+    
     int getNbCoupJoue(){
         return coup_joue;
+    }
+
+    void printBoardUF() {
+        int N = board.size();
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                std::cerr << board[i][j] << " ";
+            }
+            std::cerr << std::endl;
+        }
     }
 };
 
@@ -250,13 +267,14 @@ class IA_Player : public Player_Interface {
         // Debut de la simulation
         std::cerr << "DEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
+            std::cerr <<"Avant le coup : " << std::endl;
+            uf.printBoardUF();
             pl = (pl == 'X') ? 'O' : 'X';
-            int row, col;
             auto move = available[uniform_moves_distribution(_random_number_generator)];
             std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
-            row = move.first;
-            col = move.second;
-            uf.applyMoveUF(row, col, pl);
+            uf.applyMoveUF(move.first, move.second, pl);
+            std::cerr <<"Avant le coup : " << std::endl;
+            uf.printBoardUF();
             } while (!uf.hasWinner(pl));
         std::cerr << "FIN SIMULATION Le gagnant est : " << pl << std::endl;
         return pl;
