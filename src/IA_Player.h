@@ -350,6 +350,7 @@ public:
             backpropagate(node,winner);
         }
         Node* best = FindBestChild(_root);
+        _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         std::cerr << "Le meilleur move pour " << _player << "est : (" << best->moveRow << "," << best->moveCol << ")\n" << std::endl;
         return {best->moveRow, best->moveCol};
     }
