@@ -169,7 +169,6 @@ class IA_Player : public Player_Interface {
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            double rave = 0.0;
             double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
@@ -275,8 +274,8 @@ class IA_Player : public Player_Interface {
     std::vector<std::pair<int,int>> getAllMoves(Hex_Environement& hex) {
         std::vector<std::pair<int,int>> moves;
         // O(n^2)
-        for(int i=0; i < _taille; i++) {
-            for(int j = 0; j< _taille; j++) {
+        for(unsigned int i=0; i < _taille; i++) {
+            for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
                     moves.push_back({i,j});
                 }
@@ -308,6 +307,7 @@ public:
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         auto start = std::chrono::steady_clock::now();
+        std::cerr << "Erreur : Nous sommes rentrer\n";
 
         if(_root == nullptr) {
             _root = new Node();
