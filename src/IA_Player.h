@@ -385,8 +385,8 @@ public:
             _root->untriedMoves = getAllMoves(hex);
         }
 
-        Node* node = _root;
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
+            Node* node = _root;
             // 1. SELECTION
             while(node->untriedMoves.empty() && !node->children.empty()) {
                 node = select(node);
