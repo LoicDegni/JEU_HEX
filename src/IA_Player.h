@@ -282,9 +282,11 @@ class IA_Player : public Player_Interface {
             std::swap(available[random_index], available.back());
             available.pop_back();
             std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
+            std::cerr <<"Apres le coup : " << std::endl;
+            uf.printBoardUF();
             } while (!uf.hasWinner(pl) && !available.empty());
 
-            std::cerr <<"Apres simulation : " << std::endl;
+            std::cerr <<"APRES SIMULATION : " << std::endl;
             uf.printBoardUF();
 
             if(!uf.hasWinner('X') && !uf.hasWinner('O')){
