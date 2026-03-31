@@ -254,8 +254,8 @@ class IA_Player : public Player_Interface {
         for(auto [row,col,pl] : moves){
             uf.applyMoveUF(row,col,pl);
         }
-        //std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
-        //uf.printBoardUF();
+        std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
+        uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
         for (auto &move : node->untriedMoves)
@@ -269,8 +269,8 @@ class IA_Player : public Player_Interface {
         // Debut de la simulation
         std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
-            std::cerr <<"Avant le coup : " << std::endl;
-            uf.printBoardUF();
+            //std::cerr <<"Avant le coup : " << std::endl;
+            //uf.printBoardUF();
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
