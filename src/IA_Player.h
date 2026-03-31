@@ -254,31 +254,39 @@ class IA_Player : public Player_Interface {
         for(auto [row,col,pl] : moves){
             uf.applyMoveUF(row,col,pl);
         }
+        std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
+        uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
         for (auto &move : node->untriedMoves)
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
 
+        std::cerr << "la taille initiale du available list est : " << available.size() << std::endl;
+
         std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
         char pl = node->playerJustMoved;
-        uf.resetNbCoupJoue();
 
         // Debut de la simulation
         std::cerr << "DEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
-            std::cerr <<"Avant le coup : " << std::endl;
-            uf.printBoardUF();
+            //std::cerr <<"Avant le coup : " << std::endl;
+            //uf.printBoardUF();
             pl = (pl == 'X') ? 'O' : 'X';
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto move = available[random_index];
-            std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            //std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.applyMoveUF(move.first, move.second, pl);
-            std::cerr <<"Apres le coup : " << std::endl;
-            uf.printBoardUF();
+            //std::cerr <<"Apres le coup : " << std::endl;
+            //uf.printBoardUF();
             std::swap(available[random_index], available.back());
             available.pop_back();
+            std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
             } while (!uf.hasWinner(pl) && !available.empty());
+
+            std::cerr <<"Apres simulation : " << std::endl;
+            uf.printBoardUF();
+
             if(!uf.hasWinner('X') && !uf.hasWinner('O')){
                 std::cerr << "Erreur: available list est vide\n";
                 std::exit(EXIT_FAILURE);
