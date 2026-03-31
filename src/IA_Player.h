@@ -287,13 +287,13 @@ class IA_Player : public Player_Interface {
             //std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             //uf.printBoardUF();
             } while (!uf.hasWinner(pl) && !available.empty());
-            
+
             if(!uf.hasWinner('X') && !uf.hasWinner('O')){
                 std::cerr << "Erreur: available list est vide\n";
                 std::exit(EXIT_FAILURE);
             }
-        std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
-        uf.printBoardUF();
+        //std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
+        //uf.printBoardUF();
         return pl;
     }
 
