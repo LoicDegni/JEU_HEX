@@ -315,10 +315,12 @@ class IA_Player : public Player_Interface {
     Node* FindBestChild(Node* node) {
         Node* best = nullptr;
         int maxVisits = -1;
+        int child_number = 0;
 
         for(auto child: node->children) {
+            std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
+            std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : \n" << child->visits ; 
             if(child->visits > maxVisits) {
-                std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : \n" << child->visits ; 
                 maxVisits = child->visits;
                 best = child;
             }
