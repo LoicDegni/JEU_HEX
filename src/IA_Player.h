@@ -171,19 +171,12 @@ class IA_Player : public Player_Interface {
         for(auto child: node->children) {
             double rave = 0.0;
             double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
-            if(child->raveVisits > 0) 
+
+            if (uct > bestValue) 
             {
-                rave = child->raveWins / child->raveVisits;
-            }
-            double X = 4 * pow(0.001,0.001) * child->visits * child->raveVisits; // 4 ×b2 ×S[i].nb ×ni
-            double beta = child->raveVisits / (child->visits + child->raveVisits + X + 1e-6);
-            double value = (1 - beta) * uct + beta * rave;
-            if (value > bestValue) 
-            {
-                bestValue = value;
+                bestValue = uct;
                 best = child;
             }
-
         }
         return best;
     }
