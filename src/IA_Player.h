@@ -275,12 +275,14 @@ class IA_Player : public Player_Interface {
             pl = (pl == 'X') ? 'O' : 'X';
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto move = available[random_index];
-            //std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            std::cerr << "Le coup joue est [" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.applyMoveUF(move.first, move.second, pl);
             //std::cerr <<"Apres le coup : " << std::endl;
             //uf.printBoardUF();
             std::swap(available[random_index], available.back());
+            auto move_out = available.back();
             available.pop_back();
+            std::cerr << "Le coup enlevé est [" << move_out.first << "," << move_out.second << "] joueur : " << pl << std::endl;
             std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
             std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.printBoardUF();
