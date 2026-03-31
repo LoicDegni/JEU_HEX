@@ -279,7 +279,7 @@ class IA_Player : public Player_Interface {
             std::swap(available[random_index], available.back());
             available.pop_back();
             } while (!uf.hasWinner(pl) && !available.empty());
-            if(!uf.hasWinner(pl)){
+            if(!uf.hasWinner('X') && !uf.hasWinner('O')){
                 std::cerr << "Erreur: available list est vide\n";
                 std::exit(EXIT_FAILURE);
             }
