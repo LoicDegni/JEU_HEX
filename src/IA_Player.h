@@ -262,30 +262,30 @@ class IA_Player : public Player_Interface {
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
 
-        //std::cerr << "la taille initiale du available list est : " << available.size() << std::endl;
+        std::cerr << "la taille initiale du available list est : " << available.size() << std::endl;
 
         char pl = node->playerJustMoved;
 
         // Debut de la simulation
-        //std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
+        std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
-            //std::cerr <<"Avant le coup : " << std::endl;
-            //uf.printBoardUF();
+            std::cerr <<"Avant le coup : " << std::endl;
+            uf.printBoardUF();
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto move = available[random_index];
-            //std::cerr << "Le coup joue est [" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            std::cerr << "Le coup joue est [" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.applyMoveUF(move.first, move.second, pl);
             //std::cerr <<"Apres le coup : " << std::endl;
-            //uf.printBoardUF();
+            uf.printBoardUF();
             std::swap(available[random_index], available.back());
             auto move_out = available.back();
             available.pop_back();
             //std::cerr << "Le coup enlevé est [" << move_out.first << "," << move_out.second << "] joueur : " << pl << std::endl;
-            //std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
-            //std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
-            //uf.printBoardUF();
+            std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
+            std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            uf.printBoardUF();
             } while (!uf.hasWinner(pl) && !available.empty());
 
             if(!uf.hasWinner('X') && !uf.hasWinner('O')){
