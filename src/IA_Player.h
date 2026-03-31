@@ -270,12 +270,19 @@ class IA_Player : public Player_Interface {
             std::cerr <<"Avant le coup : " << std::endl;
             uf.printBoardUF();
             pl = (pl == 'X') ? 'O' : 'X';
-            auto move = available[uniform_moves_distribution(_random_number_generator)];
+            int random_index = uniform_moves_distribution(_random_number_generator);
+            auto move = available[random_index];
             std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.applyMoveUF(move.first, move.second, pl);
             std::cerr <<"Apres le coup : " << std::endl;
             uf.printBoardUF();
-            } while (!uf.hasWinner(pl));
+            std::swap(available[random_index], available.back());
+            available.pop_back();
+            } while (!uf.hasWinner(pl) && !available.empty());
+            if(!uf.hasWinner(pl)){
+                std::cerr << "Erreur: mouvement invalide\n";
+                std::exit(EXIT_FAILURE);
+            }
         std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
         return pl;
     }
