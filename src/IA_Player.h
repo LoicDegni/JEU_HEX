@@ -273,10 +273,10 @@ class IA_Player : public Player_Interface {
             auto move = available[uniform_moves_distribution(_random_number_generator)];
             std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.applyMoveUF(move.first, move.second, pl);
-            std::cerr <<"Avant le coup : " << std::endl;
+            std::cerr <<"Apres le coup : " << std::endl;
             uf.printBoardUF();
             } while (!uf.hasWinner(pl));
-        std::cerr << "FIN SIMULATION Le gagnant est : " << pl << std::endl;
+        std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
         return pl;
     }
 
