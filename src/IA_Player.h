@@ -248,7 +248,7 @@ class IA_Player : public Player_Interface {
         uf.resetNbCoupJoue();
 
         // Debut de la simulation
-        std::cerr << "DEBUT SIMULATION pour joueur : " << (pl == 'X') ? 'O' : 'X' << std::endl;
+        std::cerr << "DEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             int row, col;
