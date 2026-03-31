@@ -254,8 +254,8 @@ class IA_Player : public Player_Interface {
         for(auto [row,col,pl] : moves){
             uf.applyMoveUF(row,col,pl);
         }
-        //std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
-        //uf.printBoardUF();
+        std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
+        uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
         for (auto &move : node->untriedMoves)
@@ -267,7 +267,7 @@ class IA_Player : public Player_Interface {
         char pl = node->playerJustMoved;
 
         // Debut de la simulation
-        std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
+        //std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
         do {
             //std::cerr <<"Avant le coup : " << std::endl;
             //uf.printBoardUF();
@@ -283,9 +283,9 @@ class IA_Player : public Player_Interface {
             auto move_out = available.back();
             available.pop_back();
             //std::cerr << "Le coup enlevé est [" << move_out.first << "," << move_out.second << "] joueur : " << pl << std::endl;
-            std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
-            std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
-            uf.printBoardUF();
+            //std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
+            //std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            //uf.printBoardUF();
             } while (!uf.hasWinner(pl) && !available.empty());
 
             if(!uf.hasWinner('X') && !uf.hasWinner('O')){
@@ -362,7 +362,7 @@ public:
     void otherPlayerMove(int row, int col) override {
         // l'autre joueur à joué (row, col).
         _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
-        printState();
+        //printState();
 
         if(_root != nullptr) {
             for(auto child : _root->children) {
