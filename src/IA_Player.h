@@ -248,16 +248,17 @@ class IA_Player : public Player_Interface {
         uf.resetNbCoupJoue();
 
         // Debut de la simulation
+        std::cerr << "DEBUT SIMULATION pour joueur : " << (pl == 'X') ? 'O' : 'X' << std::endl;
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             int row, col;
             auto move = available[uniform_moves_distribution(_random_number_generator)];
-            std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << "\n" << std::endl;
+            std::cerr << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             row = move.first;
             col = move.second;
             uf.applyMoveUF(row, col, pl);
             } while (!uf.hasWinner(pl));
-
+        std::cerr << "FIN SIMULATION Le gagnant est : " << pl << std::endl;
         return pl;
     }
 
