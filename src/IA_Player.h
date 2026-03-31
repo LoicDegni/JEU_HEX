@@ -275,10 +275,10 @@ class IA_Player : public Player_Interface {
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto move = available[random_index];
-            std::cerr << "Le coup joue est [" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            //std::cerr << "Le coup joue est [" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.applyMoveUF(move.first, move.second, pl);
             //std::cerr <<"Apres le coup : " << std::endl;
-            uf.printBoardUF();
+            //uf.printBoardUF();
             std::swap(available[random_index], available.back());
             auto move_out = available.back();
             available.pop_back();
