@@ -228,16 +228,22 @@ class IA_Player : public Player_Interface {
 
         std::vector<std::pair<int,int>> available = node->untriedMoves;
         char pl = node->playerJustMoved;
+        int nb_coup = 0;
 
         // Debut de la simulation
-        do{
+        do {
             pl = (pl == 'X') ? 'O' : 'X';
-            auto [row, col] = available[rand() % available.size()];
-            while(!uf.isValidMoveUF(row,col)) {
-                auto [row, col] = available[rand() % available.size()];
-            }
-            uf.applyMoveUF(row,col,pl);
-        }while(!uf.hasWinner(pl));
+            int row, col;
+            do {
+                auto move = available[rand() % available.size()];
+                row = move.first;
+                col = move.second;
+            } while (!uf.isValidMoveUF(row, col));
+
+            uf.applyMoveUF(row, col, pl);
+            nb_coup++;
+            std::cerr << "check point simulation apres applyUF\nLa taille de available est :" <<available.size() << "\nLe nombre de coup aleatoire joue est : " <<nb_coup <<"\n" << std::endl;
+        } while (!uf.hasWinner(pl));
 
         return pl;
     }
@@ -307,7 +313,6 @@ public:
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         auto start = std::chrono::steady_clock::now();
-        std::cerr << "Erreur : Nous sommes rentrer\n";
 
         if(_root == nullptr) {
             _root = new Node();
