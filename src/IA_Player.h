@@ -255,7 +255,7 @@ class IA_Player : public Player_Interface {
             uf.applyMoveUF(row, col, pl);
             nb_coup++;
             //std::cerr << "check point simulation apres applyUF\nLa taille de available est :" <<available.size() << "\nLe nombre de coup aleatoire joue est : " <<nb_coup <<"\n" << std::endl;
-            std::cerr << "Le nombre de coup joue dans la simulation est : " << nb_coup << "\nLe nombre de coup joue dans UF est :" << uf.getNbCoupJoue() << "\n" << std::endl;
+            //std::cerr << "Le nombre de coup joue dans la simulation est : " << nb_coup << "\nLe nombre de coup joue dans UF est :" << uf.getNbCoupJoue() << "\n" << std::endl;
         } while (!uf.hasWinner(pl));
         //std::cerr << "Le gagnant est : " << pl << std::endl;
 
