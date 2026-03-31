@@ -262,7 +262,7 @@ class IA_Player : public Player_Interface {
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
 
-        std::cerr << "la taille initiale du available list est : " << available.size() << std::endl;
+        //std::cerr << "la taille initiale du available list est : " << available.size() << std::endl;
 
         char pl = node->playerJustMoved;
 
