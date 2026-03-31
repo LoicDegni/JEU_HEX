@@ -95,6 +95,9 @@ public:
 
     void applyMoveUF(int r, int c, char player) {
         int node = id(r, c);
+        occupied[node] = true;
+        ownership[node] = player;
+        coup_joue++;
 
         // directions Hex (6 voisins)
         int dr[6] = {-1, -1, 0, 0, 1, 1};
@@ -106,9 +109,6 @@ public:
 
             if (nr >= 0 && nr < N && nc >= 0 && nc < N) {
                 if (occupied[id(nr, nc)] && ownership[id(nr, nc)] == player) {
-                    occupied[node] = true;
-                    ownership[node] = player;
-                    coup_joue++;
                     unite(node, id(nr, nc));
                 }
             }
