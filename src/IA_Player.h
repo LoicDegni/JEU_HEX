@@ -305,6 +305,11 @@ private:
             }else {
                 uf.printBoardUF();
                 std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
+                std::cerr << "Le UF contient\n" << std::endl;
+                for (auto [row,col,pl]: moves){
+                    std::cerr << "[" << row << "," << col << "]\n" << std::endl;
+
+                }
             }
         }
         std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\nTaille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nTaille path courant : " << path.size() << "\nTaille _historique_coups : " << _historique_coups.size() << "\nFIN COMPARAISON\n\n" << std::endl;
