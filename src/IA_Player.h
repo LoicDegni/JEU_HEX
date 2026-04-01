@@ -248,8 +248,8 @@ private:
          * 
          * Return:      Le noeud enfant
         */
-        int b = node->untriedMoves.back();
-        auto [row, col] = convertIDToCoordonate(b);
+        int moveID = node->untriedMoves.back();
+        auto [row, col] = convertIDToCoordonate(moveID);
         node->untriedMoves.pop_back();
 
         Node* child = new Node();
@@ -261,35 +261,36 @@ private:
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
         child->toVisit = node->toVisit;
 
-        if(b == _id_max){
-            auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
-            std::cerr << "Contenue toVisit de child:\n";
-            for(auto& id : child->toVisit){
-                std::cerr << id << std::endl;
-            }
-            std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
-            std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
-            std::cerr << "Tovisit ID check (" << b << ") \n";
-            child->toVisit.pop_back();
-        }else {
-            std::swap(child->toVisit[node->untriedMoves.back()], child->toVisit.back());
-            auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
-            std::cerr << "Contenue toVisit de child:\n";
-            for(auto& id : child->toVisit){
-                std::cerr << id << std::endl;
-            }
-            std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
-            std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
-            std::cerr << "Tovisit ID check (" << b << ") \n";
-            child->toVisit.pop_back();
 
+
+        auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
+        std::cerr << "Contenue toVisit de child:\n";
+        for(auto& id : child->toVisit){
+            std::cerr << id << std::endl;
+        }
+        std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
+        std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
+        std::cerr << "Tovisit ID check (" << moveID << ") \n";
+
+
+
+        auto it = std::find(child->toVisit.begin(), child->toVisit.end(),moveID);
+        if (it != child->toVisit.end()) {
+            std::swap(*it,child->toVisit.back());
+            child->toVisit.pop_back();
         }
         child->untriedMoves = child->toVisit;
+
+
+
+
         std::cerr << "Contenue toVisit de child apres pop:\n";
         for(auto& id : child->toVisit){
             std::cerr << id << std::endl;
         }
         
+
+
         node->children.push_back(child);
 
         return child;
