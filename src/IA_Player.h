@@ -210,6 +210,7 @@ class IA_Player : public Player_Interface {
         double wins = 0;
 
         std::vector<std::pair<int,int>> untriedMoves;
+        std::vector<std::pair<int,int>> toVisit;
     };   
     Node* _root = nullptr;
 
@@ -251,6 +252,9 @@ class IA_Player : public Player_Interface {
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
         child->untriedMoves = node->untriedMoves;
 
+        child->toVisit = node->toVisit;
+        child->toVisit.pop_back();
+        
         node->children.push_back(child);
 
         return child;
@@ -284,11 +288,11 @@ class IA_Player : public Player_Interface {
         //uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
-        for (auto &move : node->untriedMoves)
+        for (auto &move : node->toVisit)
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
 
-        std::cerr << "la taille initiale du available list est : " << available.size() << std::endl;
+        std::cerr << "\nla taille initiale du available list est : " << available.size() << std::endl;
 
         char pl = node->playerJustMoved;
 
@@ -410,6 +414,7 @@ public:
             _root = new Node();
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
             _root->untriedMoves = getAllMoves(hex);
+            _root->toVisit = _root->untriedMoves;
         }
 
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
