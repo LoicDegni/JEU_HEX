@@ -298,7 +298,7 @@ class IA_Player : public Player_Interface {
         for (auto &move : node->toVisit)
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
-        std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\n Taille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nFIN COMPARAISON\n\n<< std::endl;
+        std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\n Taille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nFIN COMPARAISON\n\n" << std::endl;
         //std::cerr << "\nLa taille initiale du available list est : " << available.size() << std::endl;
 
         char pl = node->playerJustMoved;
