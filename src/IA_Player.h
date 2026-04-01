@@ -289,6 +289,7 @@ class IA_Player : public Player_Interface {
             } while (!uf.hasWinner(pl) && !available.empty());
 
             if(!uf.hasWinner('X') && !uf.hasWinner('O')){
+                uf.printBoardUF();
                 std::cerr << "Erreur: available list est vide\n";
                 std::exit(EXIT_FAILURE);
             }
@@ -351,7 +352,7 @@ public:
     void printState() {
         UnionFind uf(_taille);
 
-        for(auto& [row,col,pl] : _historique_coups){
+        for(auto [row,col,pl] : _historique_coups){
             uf.applyMoveUF(row,col,pl);
         }
         std::cerr << "TABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
