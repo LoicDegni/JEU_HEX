@@ -260,11 +260,12 @@ private:
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
         child->toVisit = node->toVisit;
 
-        std::swap(child->toVisit[convertCoordonateToID(row, col)], child->toVisit.back());  
+        std::swap(child->toVisit[node->untriedMoves.back()], child->toVisit.back());  
         auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
         std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
         std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
         std::cerr << "Tovisit ID check (" << b << ") \n";
+        
         child->toVisit.pop_back();
         child->untriedMoves = child->toVisit;
         
