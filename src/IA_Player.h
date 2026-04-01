@@ -156,42 +156,42 @@ public:
         return coup_joue;
     }
 
-void printBoardUF() {
-    int N = board.size();
+    void printBoardUF() {
+        int N = board.size();
 
-    for (int i = 0; i < N; i++) {
-        // décalage (indentation)
-        for (int k = 0; k < i; k++) {
-            std::cerr << " ";
-        }
-
-        // affichage des cellules
-        for (int j = 0; j < N; j++) {
-            std::cerr << board[i][j];
-
-            if (j < N - 1) {
-                std::cerr << " - ";
-            }
-        }
-
-        std::cerr << std::endl;
-
-        // lignes de liaison (diagonales)
-        if (i < N - 1) {
+        for (int i = 0; i < N; i++) {
+            // décalage (indentation)
             for (int k = 0; k < i; k++) {
                 std::cerr << " ";
             }
 
-            std::cerr << " ";
+            // affichage des cellules
+            for (int j = 0; j < N; j++) {
+                std::cerr << board[i][j];
 
-            for (int j = 0; j < N - 1; j++) {
-                std::cerr << "\\ / ";
+                if (j < N - 1) {
+                    std::cerr << " - ";
+                }
             }
 
-            std::cerr << "\\" << std::endl;
+            std::cerr << std::endl;
+
+            // lignes de liaison (diagonales)
+            if (i < N - 1) {
+                for (int k = 0; k < i; k++) {
+                    std::cerr << " ";
+                }
+
+                std::cerr << " ";
+
+                for (int j = 0; j < N - 1; j++) {
+                    std::cerr << "\\ / ";
+                }
+
+                std::cerr << "\\" << std::endl;
+            }
         }
     }
-}
 
 class IA_Player : public Player_Interface {
     char _player;
