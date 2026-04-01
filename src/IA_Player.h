@@ -262,7 +262,7 @@ class IA_Player : public Player_Interface {
     }
 
     char simulate(Node* node) {
-        if (node->untriedMoves.empty()) {
+        if (node->toVisit.empty()) {
             return node->playerJustMoved;
         }
         UnionFind uf(_taille);
