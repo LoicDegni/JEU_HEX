@@ -274,79 +274,21 @@ private:
     }
 
     char simulate(Node* node) {
+        UnionFind uf(_taille);
+        std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
+        std::vector<std::tuple<int,int, char>> moves_played_from_root;
+        std::vector<std::pair<int,int>> available_moves;
+        char pl = node->playerJustMoved;
+
         if (node->toVisit.empty()) {
             return node->playerJustMoved;
         }
-        UnionFind uf(_taille);
 
-        std::vector< std::tuple<unsigned int, unsigned int, char> > moves;
-        for (auto &h : _historique_coups) {
-            moves.push_back(h);
-        }
+        getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
+        simulateToThePresent(all_moves_played, uf);
+        getAvailableMoves(node, available_moves, all_moves_played, uf);
+        simulateToTheEnd(pl,available_moves,uf);
 
-        std::vector<std::tuple<int,int, char>> path;
-        Node* current = node;
-        while (current->parent != nullptr) {
-            path.push_back({current->moveRow, current->moveCol, current->playerJustMoved});
-            current = current->parent;
-        }
-        std::reverse(path.begin(), path.end());
-
-        moves.insert(moves.end(), path.begin(), path.end());
-
-        for(auto [row,col,pl] : moves){
-            uf.applyMoveUF(row,col,pl);
-        }
-
-        std::vector<std::pair<int,int>> available;
-        for (const auto &id : node->toVisit){
-            auto move = convertIDToCoordonate(id);
-            if(uf.isValidMoveUF(move.first, move.second)){
-                available.push_back(move);
-            }else {
-                uf.printBoardUF();
-                std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
-                std::cerr << "Le UF contient\n" << std::endl;
-                for (auto [row,col,pl]: moves){
-                    std::cerr << "[" << row << "," << col << "]\n" << std::endl;
-
-                }
-            }
-        }
-        //std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\nTaille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nTaille path courant : " << path.size() << "\nTaille _historique_coups : " << _historique_coups.size() << "\nFIN COMPARAISON\n\n" << std::endl;
-        //std::cerr << "\nLa taille initiale du available list est : " << available.size() << std::endl;
-
-        char pl = node->playerJustMoved;
-
-        // Debut de la simulation
-        //std::cerr << "\n\nDEBUT SIMULATION pour joueur : " << ((pl == 'X') ? 'O' : 'X') << std::endl;
-        do {
-            //std::cerr <<"Avant le coup : " << std::endl;
-            //uf.printBoardUF();
-            pl = (pl == 'X') ? 'O' : 'X';
-            std::uniform_int_distribution<int> uniform_moves_distribution(0, available.size() -1);
-            int random_index = uniform_moves_distribution(_random_number_generator);
-            auto move = available[random_index];
-            //std::cerr << "Le coup joue est [" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
-            uf.applyMoveUF(move.first, move.second, pl);
-            //std::cerr <<"Apres le coup : " << std::endl;
-            //uf.printBoardUF();
-            std::swap(available[random_index], available.back());
-            auto move_out = available.back();
-            available.pop_back();
-            //std::cerr << "Le coup enlevé est [" << move_out.first << "," << move_out.second << "] joueur : " << pl << std::endl;
-            //std::cerr << "\nLa taille mise à jour du available list est : " << available.size() << std::endl;
-            //std::cerr <<"\nApres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
-            //uf.printBoardUF();
-        }while (!uf.hasWinner(pl) && !available.empty());
-
-        if(!uf.hasWinner('X') && !uf.hasWinner('O')){
-            uf.printBoardUF();
-            std::cerr << "Erreur: available list est vide\n";
-            std::exit(EXIT_FAILURE);
-        }
-        //std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
-        //uf.printBoardUF();
         return pl;
     }
 
@@ -364,21 +306,77 @@ private:
        }
     }
     //-------------------MCTS-------------------//
+    
+    void getAllMovesPlayed(Node* node, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , std::vector<std::tuple<int,int, char>>& moves_played_from_root){
+        Node* current = node;
+        for (auto &h : _historique_coups) {
+            all_moves_played.push_back(h);
+        }
+
+        while (current->parent != nullptr) {
+            moves_played_from_root.push_back({current->moveRow, current->moveCol, current->playerJustMoved});
+            current = current->parent;
+        }
+        std::reverse(moves_played_from_root.begin(), moves_played_from_root.end());
+
+        all_moves_played.insert(all_moves_played.end(), moves_played_from_root.begin(), moves_played_from_root.end());
+    }
+    
+    void simulateToThePresent(std::vector< std::tuple<unsigned int, unsigned int, char>>& all_moves_played, UnionFind& uf) {
+        for(auto [row,col,pl] : all_moves_played){
+            uf.applyMoveUF(row,col,pl);
+        }
+    }
+
+    void simulateToTheEnd(char& pl, std::vector<std::pair<int,int>>& available_moves, UnionFind& uf){
+        do {
+            pl = (pl == 'X') ? 'O' : 'X';
+            std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
+            int random_index = uniform_moves_distribution(_random_number_generator);
+            auto move = available_moves[random_index];
+            uf.applyMoveUF(move.first, move.second, pl);
+            std::swap(available_moves[random_index], available_moves.back());
+            auto move_out = available_moves.back();
+            available_moves.pop_back();
+        }while (!uf.hasWinner(pl) && !available_moves.empty());
+
+        if(!uf.hasWinner('X') && !uf.hasWinner('O')){
+            uf.printBoardUF();
+            std::cerr << "Erreur: available list est vide\n";
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
+
+    void getAvailableMoves(Node* node, std::vector<std::pair<int, int>>& available_moves, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , UnionFind& uf){
+        for (const auto &id : node->toVisit){
+            auto move = convertIDToCoordonate(id);
+            if(uf.isValidMoveUF(move.first, move.second)){
+                available_moves.push_back(move);
+            }else {
+                uf.printBoardUF();
+                std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
+                std::cerr << "Le UF contient\n" << std::endl;
+                for (auto [row,col,pl]: all_moves_played){
+                    std::cerr << "[" << row << "," << col << "]\n" << std::endl;
+
+                }
+            }
+        }
+    }
+
     Node* FindBestChild(Node* node) {
         Node* best = nullptr;
         int maxVisits = -1;
         int child_number = 0;
 
-        for(auto child: node->children) {
-            //std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
-            //std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits << std::endl; 
+        for(auto child: node->children) {    
             if(child->visits > maxVisits) {
                 maxVisits = child->visits;
                 best = child;
             }
             child_number++;
         }
-        //std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits << std::endl; 
         return best;
     }
 
