@@ -302,6 +302,7 @@ private:
             auto move = convertIDToCoordonate(id);
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
+            uf.printBoardUF();
             std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
 
         }
