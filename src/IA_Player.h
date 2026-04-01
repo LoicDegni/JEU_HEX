@@ -416,12 +416,14 @@ public:
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
             getAllMoves(hex);
         }
-
+        int nb_selection = 0;
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
             Node* node = _root;
             // 1. SELECTION
             while(node->untriedMoves.empty() && !node->children.empty()) {
                 node = select(node);
+                nb_selection++;
+                std::cerr << "Il y a eu : " << nb_selection <<  "\nLast move  : est : (" << node->moveRow << "," << node->moveCol << ")\nJoue par : " << node->playerJustMoved << std::endl;
             }
             // 2. EXPANSION
             if(!node->untriedMoves.empty()) {
