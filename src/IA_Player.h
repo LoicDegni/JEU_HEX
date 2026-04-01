@@ -272,6 +272,10 @@ private:
         
         child->toVisit.pop_back();
         child->untriedMoves = child->toVisit;
+        std::cerr << "Contenue toVisit de child:\n";
+        for(auto& id : child->toVisit){
+            std::cerr << id << std::endl;
+        }
         
         node->children.push_back(child);
 
