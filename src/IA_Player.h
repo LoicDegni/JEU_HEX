@@ -247,7 +247,8 @@ private:
          * 
          * Return:      Le noeud enfant
         */
-        auto [row, col] = convertIDToCoordonate(node->untriedMoves.back());
+        int b = node->untriedMoves.back();
+        auto [row, col] = convertIDToCoordonate(b);
         node->untriedMoves.pop_back();
 
         Node* child = new Node();
@@ -263,6 +264,7 @@ private:
         auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
         std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
         std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
+        std::cerr << "Tovisit ID check (" << b << ") \n";
         child->toVisit.pop_back();
         child->untriedMoves = child->toVisit;
         
