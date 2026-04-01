@@ -218,11 +218,15 @@ class IA_Player : public Player_Interface {
     //-------------------MCTS-------------------//
     Node* select(Node* node) {
         double C = 1.41; //(2)^1/2 = 1.1414...
+        int child_number = 0;
 
         Node* best = nullptr;
         double bestValue = -1e9;
 
         for(auto child: node->children) {
+            std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
+            std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits << std::endl; 
+          
             double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
@@ -230,7 +234,9 @@ class IA_Player : public Player_Interface {
                 bestValue = uct;
                 best = child;
             }
+            child_number++;
         }
+        std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits << std::endl; 
         return best;
     }
    
@@ -423,7 +429,7 @@ public:
             while(node->untriedMoves.empty() && !node->children.empty()) {
                 node = select(node);
                 nb_selection++;
-                std::cerr << "Il y a eu : " << nb_selection <<  "\nLast move  : est : (" << node->moveRow << "," << node->moveCol << ")\nJoue par : " << node->playerJustMoved << std::endl;
+                std::cerr << "Il y a eu : " << nb_selection <<  "selections\nLast move  est : (" << node->moveRow << "," << node->moveCol << ")\nJoue par : " << node->playerJustMoved << std::endl;
             }
             // 2. EXPANSION
             if(!node->untriedMoves.empty()) {
