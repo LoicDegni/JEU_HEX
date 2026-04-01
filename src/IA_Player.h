@@ -210,12 +210,7 @@ class IA_Player : public Player_Interface {
         int visits = 0;
         double wins = 0;
 
-        struct pair_hash {
-            size_t operator()(const std::pair<int,int>& p) const {
-                return std::hash<int>()(p.first) ^ (std::hash<int>()(p.second) << 1);
-            }
-        };
-        std::unordered_set<std::pair<int,int>, int, pair_hash> toVisit;
+        std::vector<std::pair<int,int>> toVisit;
         std::vector<std::pair<int,int>> untriedMoves;
     };   
     Node* _root = nullptr;
@@ -259,7 +254,7 @@ class IA_Player : public Player_Interface {
         child->untriedMoves = node->untriedMoves;
 
         child->toVisit = node->toVisit;
-        child->toVisit.erase({row,col});
+        child->toVisit.pop_back();
         
         node->children.push_back(child);
 
@@ -374,13 +369,11 @@ class IA_Player : public Player_Interface {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
                     _root->untriedMoves.push_back({i,j});
-                    _root->toVisit.insert({i,j})
+                    _root->toVisit.push_back({i,j});
                 }
             }
         }
-        //return moves;
     }
-
 public:
     IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()) {
         assert(player == 'X' || player == 'O');
@@ -440,7 +433,6 @@ public:
         }
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
-        _root
         _root = best;
         _root->parent = nullptr;
         std::cerr << "Le meilleur move pour " << _player << " est : (" << best->moveRow << "," << best->moveCol << ")\n" << std::endl;
