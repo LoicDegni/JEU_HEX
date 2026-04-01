@@ -313,7 +313,7 @@ private:
                 }
             }
         }
-        std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\nTaille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nTaille path courant : " << path.size() << "\nTaille _historique_coups : " << _historique_coups.size() << "\nFIN COMPARAISON\n\n" << std::endl;
+        //std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\nTaille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nTaille path courant : " << path.size() << "\nTaille _historique_coups : " << _historique_coups.size() << "\nFIN COMPARAISON\n\n" << std::endl;
         //std::cerr << "\nLa taille initiale du available list est : " << available.size() << std::endl;
 
         char pl = node->playerJustMoved;
@@ -370,15 +370,15 @@ private:
         int child_number = 0;
 
         for(auto child: node->children) {
-            std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
-            std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits << std::endl; 
+            //std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
+            //std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits << std::endl; 
             if(child->visits > maxVisits) {
                 maxVisits = child->visits;
                 best = child;
             }
             child_number++;
         }
-        std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits << std::endl; 
+        //std::cerr << "BEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits << std::endl; 
         return best;
     }
 
