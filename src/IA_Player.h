@@ -201,6 +201,7 @@ private:
     unsigned int _taille;
     std::vector< std::tuple<unsigned int, unsigned int, char> > _historique_coups;
     std::mt19937 _random_number_generator;
+    int _id_max;
 
     struct Node {
         Node* parent= nullptr;
@@ -260,19 +261,31 @@ private:
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
         child->toVisit = node->toVisit;
 
-        std::swap(child->toVisit[node->untriedMoves.back()], child->toVisit.back());  
-        auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
-        std::cerr << "Contenue toVisit de child:\n";
-        for(auto& id : child->toVisit){
-            std::cerr << id << std::endl;
+        if(b == _id_max){
+            auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
+            std::cerr << "Contenue toVisit de child:\n";
+            for(auto& id : child->toVisit){
+                std::cerr << id << std::endl;
+            }
+            std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
+            std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
+            std::cerr << "Tovisit ID check (" << b << ") \n";
+            child->toVisit.pop_back();
+        }else {
+            std::swap(child->toVisit[node->untriedMoves.back()], child->toVisit.back());
+            auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
+            std::cerr << "Contenue toVisit de child:\n";
+            for(auto& id : child->toVisit){
+                std::cerr << id << std::endl;
+            }
+            std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
+            std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
+            std::cerr << "Tovisit ID check (" << b << ") \n";
+            child->toVisit.pop_back();
+
         }
-        std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
-        std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
-        std::cerr << "Tovisit ID check (" << b << ") \n";
-        
-        child->toVisit.pop_back();
         child->untriedMoves = child->toVisit;
-        std::cerr << "Contenue toVisit de child:\n";
+        std::cerr << "Contenue toVisit de child apres pop:\n";
         for(auto& id : child->toVisit){
             std::cerr << id << std::endl;
         }
@@ -423,7 +436,7 @@ private:
     }
 
 public:
-    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()) {
+    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _id_max( (taille - 1) * taille + (taille - 1) ) {
         assert(player == 'X' || player == 'O');
     }
 
