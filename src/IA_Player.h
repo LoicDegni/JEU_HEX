@@ -192,6 +192,7 @@ public:
             }
         }
     }
+};
 
 class IA_Player : public Player_Interface {
     char _player;
