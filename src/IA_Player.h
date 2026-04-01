@@ -261,6 +261,7 @@ private:
 
         std::swap(child->toVisit[convertCoordonateToID(row, col)], child->toVisit.back());  
         auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
+        std::cerr << "Tovisit move pop update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
         std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
         child->toVisit.pop_back();
         child->untriedMoves = child->toVisit;
