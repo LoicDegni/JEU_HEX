@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cstdio>  
 #include <random>
+#include <unordered_set>
 
 #include "Hex_Environement.h"
 
@@ -209,8 +210,13 @@ class IA_Player : public Player_Interface {
         int visits = 0;
         double wins = 0;
 
+        struct pair_hash {
+            size_t operator()(const std::pair<int,int>& p) const {
+                return std::hash<int>()(p.first) ^ (std::hash<int>()(p.second) << 1);
+            }
+        };
+        std::unordered_set<std::pair<int,int>, int, pair_hash> toVisit;
         std::vector<std::pair<int,int>> untriedMoves;
-        std::vector<std::pair<int,int>> toVisit;
     };   
     Node* _root = nullptr;
 
@@ -253,7 +259,7 @@ class IA_Player : public Player_Interface {
         child->untriedMoves = node->untriedMoves;
 
         child->toVisit = node->toVisit;
-        child->toVisit.pop_back();
+        child->toVisit.erase({row,col});
         
         node->children.push_back(child);
 
@@ -292,7 +298,7 @@ class IA_Player : public Player_Interface {
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
 
-        std::cerr << "\nla taille initiale du available list est : " << available.size() << std::endl;
+        std::cerr << "\nLa taille initiale du available list est : " << available.size() << std::endl;
 
         char pl = node->playerJustMoved;
 
@@ -313,8 +319,8 @@ class IA_Player : public Player_Interface {
             auto move_out = available.back();
             available.pop_back();
             //std::cerr << "Le coup enlevé est [" << move_out.first << "," << move_out.second << "] joueur : " << pl << std::endl;
-            std::cerr << "la taille mise à jour du available list est : " << available.size() << std::endl;
-            std::cerr <<"Apres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
+            std::cerr << "\nLa taille mise à jour du available list est : " << available.size() << std::endl;
+            std::cerr <<"\nApres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             uf.printBoardUF();
             } while (!uf.hasWinner(pl) && !available.empty());
 
@@ -361,17 +367,18 @@ class IA_Player : public Player_Interface {
         return best;
     }
 
-    std::vector<std::pair<int,int>> getAllMoves(Hex_Environement& hex) {
+    void getAllMoves(Hex_Environement& hex) {
         std::vector<std::pair<int,int>> moves;
         // O(n^2)
         for(unsigned int i=0; i < _taille; i++) {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
-                    moves.push_back({i,j});
+                    _root->untriedMoves.push_back({i,j});
+                    _root->toVisit.insert({i,j})
                 }
             }
         }
-        return moves;
+        //return moves;
     }
 
 public:
@@ -413,8 +420,7 @@ public:
         if(_root == nullptr) {
             _root = new Node();
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
-            _root->untriedMoves = getAllMoves(hex);
-            _root->toVisit = _root->untriedMoves;
+            getAllMoves(hex);
         }
 
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
@@ -434,6 +440,7 @@ public:
         }
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
+        _root
         _root = best;
         _root->parent = nullptr;
         std::cerr << "Le meilleur move pour " << _player << " est : (" << best->moveRow << "," << best->moveCol << ")\n" << std::endl;
