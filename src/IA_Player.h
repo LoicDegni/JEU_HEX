@@ -225,8 +225,8 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
-            std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits << std::endl; 
+            //std::cerr << "\nCHILD NUMBER : " << child_number << std::endl;
+            //std::cerr << "\nNODE STATS\nCoup joué sur cette node : (" << child->moveRow << "," << child->moveCol << ")\nNb wins : " << child->wins << "\nNb simulation passe par ce noeud : " << child->visits << std::endl; 
           
             double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
@@ -237,7 +237,7 @@ private:
             }
             child_number++;
         }
-        std::cerr << "\nBEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits << std::endl; 
+        //std::cerr << "\nBEST NODE STATS\nCoup joué sur cette node : (" << best->moveRow << "," << best->moveCol << ")\nNb wins : " << best->wins << "\nNb simulation passe par ce noeud : " << best->visits << std::endl; 
         return best;
     }
    
@@ -261,36 +261,13 @@ private:
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
         child->toVisit = node->toVisit;
 
-
-
-        auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
-        std::cerr << "Contenue toVisit de child:\n";
-        for(auto& id : child->toVisit){
-            std::cerr << id << std::endl;
-        }
-        std::cerr << "Tovisit move pop update (" << row << "," << col << ") \n"; 
-        std::cerr << "Tovisit update (" << tv_move_out.first << "," << tv_move_out.second << ") \n"; 
-        std::cerr << "Tovisit ID check (" << moveID << ") \n";
-
-
-
         auto it = std::find(child->toVisit.begin(), child->toVisit.end(),moveID);
         if (it != child->toVisit.end()) {
             std::swap(*it,child->toVisit.back());
             child->toVisit.pop_back();
         }
+
         child->untriedMoves = child->toVisit;
-
-
-
-
-        std::cerr << "Contenue toVisit de child apres pop:\n";
-        for(auto& id : child->toVisit){
-            std::cerr << id << std::endl;
-        }
-        
-
-
         node->children.push_back(child);
 
         return child;
@@ -320,8 +297,6 @@ private:
         for(auto [row,col,pl] : moves){
             uf.applyMoveUF(row,col,pl);
         }
-        //std::cerr << "FIN RATRAPAGE HISTORIQUE pour joueur : " << ((node->playerJustMoved == 'X') ? 'O' : 'X') << std::endl;
-        //uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
         for (const auto &id : node->toVisit){
@@ -485,7 +460,7 @@ public:
             while(node->untriedMoves.empty() && !node->children.empty()) {
                 node = select(node);
                 nb_selection++;
-                std::cerr << "Il y a eu : " << nb_selection <<  "selections\nLast move  est : (" << node->moveRow << "," << node->moveCol << ")\nJoue par : " << node->playerJustMoved << std::endl;
+                //std::cerr << "Il y a eu : " << nb_selection <<  "selections\nLast move  est : (" << node->moveRow << "," << node->moveCol << ")\nJoue par : " << node->playerJustMoved << std::endl;
             }
             // 2. EXPANSION
             if(!node->untriedMoves.empty()) {
