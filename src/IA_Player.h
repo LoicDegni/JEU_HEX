@@ -196,6 +196,7 @@ public:
 };
 
 class IA_Player : public Player_Interface {
+private:
     char _player;
     unsigned int _taille;
     std::vector< std::tuple<unsigned int, unsigned int, char> > _historique_coups;
@@ -210,11 +211,10 @@ class IA_Player : public Player_Interface {
         int visits = 0;
         double wins = 0;
 
-        std::vector<std::pair<int,int>> toVisit;
-        std::vector<std::pair<int,int>> untriedMoves;
+        std::vector<int> toVisit;
+        std::vector<int> untriedMoves;
     };   
     Node* _root = nullptr;
-
     //-------------------MCTS-------------------//
     Node* select(Node* node) {
         double C = 1.41; //(2)^1/2 = 1.1414...
@@ -247,7 +247,7 @@ class IA_Player : public Player_Interface {
          * 
          * Return:      Le noeud enfant
         */
-        auto [row, col] = node->untriedMoves.back();
+        auto [row, col] = convertIDToCoordonate(node->untriedMoves.back());
         node->untriedMoves.pop_back();
 
         Node* child = new Node();
@@ -257,10 +257,13 @@ class IA_Player : public Player_Interface {
         child->moveCol = col;
 
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
-        child->untriedMoves = node->untriedMoves;
-
         child->toVisit = node->toVisit;
+
+        std::swap(child->toVisit[convertCoordonateToID(row, col)], child->toVisit.back());  
+        auto tv_move_out = convertIDToCoordonate(child->toVisit.back());
+
         child->toVisit.pop_back();
+        child->untriedMoves = child->toVisit;
         
         node->children.push_back(child);
 
@@ -295,9 +298,11 @@ class IA_Player : public Player_Interface {
         //uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
-        for (auto &move : node->toVisit)
+        for (auto &id : node->toVisit){
+            auto move = convertIDToCoordonate(id);
             if(uf.isValidMoveUF(move.first, move.second))
                 available.push_back(move);
+        }
         std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\nTaille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nTaille path courant : " << path.size() << "\nTaille _historique_coups : " << _historique_coups.size() << "\nFIN COMPARAISON\n\n" << std::endl;
         //std::cerr << "\nLa taille initiale du available list est : " << available.size() << std::endl;
 
@@ -323,13 +328,13 @@ class IA_Player : public Player_Interface {
             //std::cerr << "\nLa taille mise à jour du available list est : " << available.size() << std::endl;
             //std::cerr <<"\nApres le coup : " << "[" << move.first << "," << move.second << "] joueur : " << pl << std::endl;
             //uf.printBoardUF();
-            } while (!uf.hasWinner(pl) && !available.empty());
+        }while (!uf.hasWinner(pl) && !available.empty());
 
-            if(!uf.hasWinner('X') && !uf.hasWinner('O')){
-                uf.printBoardUF();
-                std::cerr << "Erreur: available list est vide\n";
-                std::exit(EXIT_FAILURE);
-            }
+        if(!uf.hasWinner('X') && !uf.hasWinner('O')){
+            uf.printBoardUF();
+            std::cerr << "Erreur: available list est vide\n";
+            std::exit(EXIT_FAILURE);
+        }
         //std::cerr << "FIN SIMULATION Le gagnant est : \n" << pl << std::endl;
         //uf.printBoardUF();
         return pl;
@@ -349,7 +354,6 @@ class IA_Player : public Player_Interface {
        }
     }
     //-------------------MCTS-------------------//
-
     Node* FindBestChild(Node* node) {
         Node* best = nullptr;
         int maxVisits = -1;
@@ -374,12 +378,29 @@ class IA_Player : public Player_Interface {
         for(unsigned int i=0; i < _taille; i++) {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
-                    _root->untriedMoves.push_back({i,j});
-                    _root->toVisit.push_back({i,j});
+                    _root->untriedMoves.push_back(convertCoordonateToID(i,j));
+                    _root->toVisit.push_back(convertCoordonateToID(i,j));
                 }
             }
         }
     }
+
+    int convertCoordonateToID(int r, int c) {
+        /**
+         * Fonction qui convertit une coordonne(r,c)
+         * en un identifiant unique
+        */
+        return r * _taille + c;
+    }
+
+    std::pair<int, int> convertIDToCoordonate(int id) {
+        /**
+         * Fonction qui convertit un identifiant 
+         * en sa coordonnée(r,c) d'origine
+        */
+       return {id / _taille, id % _taille};
+    }
+
 public:
     IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()) {
         assert(player == 'X' || player == 'O');
