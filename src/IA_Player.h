@@ -298,13 +298,14 @@ private:
         //uf.printBoardUF();
 
         std::vector<std::pair<int,int>> available;
-        for (auto &id : node->toVisit){
+        for (const auto &id : node->toVisit){
             auto move = convertIDToCoordonate(id);
-            if(uf.isValidMoveUF(move.first, move.second))
+            if(uf.isValidMoveUF(move.first, move.second)){
                 available.push_back(move);
-            uf.printBoardUF();
-            std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
-
+            }else {
+                uf.printBoardUF();
+                std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
+            }
         }
         std::cerr << "\n\nCOMPARAISON DES TAILLES AVAILABLES-MOVES\nTaille available moves : " << available.size() << "\nTaille moves applied : " << moves.size() << "\nTaille path courant : " << path.size() << "\nTaille _historique_coups : " << _historique_coups.size() << "\nFIN COMPARAISON\n\n" << std::endl;
         //std::cerr << "\nLa taille initiale du available list est : " << available.size() << std::endl;
