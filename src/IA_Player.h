@@ -351,7 +351,7 @@ public:
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         auto start = std::chrono::steady_clock::now();
-
+        std::cout << "NPS1 = " << std::endl;
         if(_root == nullptr) {
             _root = new Node();
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
@@ -596,7 +596,7 @@ private:
         for (auto id : played_moves) {
             auto move = convertIDToCoordonate(id);
             for (auto child : node->children) {
-                if (child->moveRow==move.first && child->moveCol == move.second) {
+                if (child->moveRow == move.first && child->moveCol == move.second) {
                     child->rave_visits++;
                     if (child->playerJustMoved == winner) child->rave_wins++;
                 }
