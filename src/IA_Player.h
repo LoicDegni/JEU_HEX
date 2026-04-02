@@ -352,25 +352,24 @@ public:
 
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
             Node* node = _root;
-
-            // 1. SELECTION
+            // 1. Sélection
             while(node->untriedMoves.empty() && !node->children.empty()) {
                 node = select(node);
             }
-            // 2. EXPANSION
+            // 2. Expansion
             if(!node->untriedMoves.empty()) {
                 node = expand(node);
             }
-            // 3. SIMULATION
-            char winner = simulate(node);
-            // 4. BACKDROP
+            // 3. Simulation
+            char winner;
+            if (!_uf.hasWinner(node->playerJustMoved)) 
+                winner = simulate(node);
+            else
+                winner = node->playerJustMoved;
+                
+            // 4. Rétropropagation
             backpropagate(node,winner);
-
-            // On met a jour la carte _uf[ (m * O(n)) + 1]
-            _uf.reset();
-            for(const auto& [r,c,pl]: _historique_coups) {
-                _uf.applyMoveUF(r,c,pl);
-            }
+            resetUFToNow();
         }
         //std::cout << "NPS = " << simulation / seconds << std::endl;
 
@@ -578,6 +577,11 @@ private:
        return {id / _taille, id % _taille};
     }
 
+    void resetUFToNow(){
+        _uf.reset();
+        for(const auto& [r,c,pl]: _historique_coups) {
+            _uf.applyMoveUF(r,c,pl);
+            }
+    }
 };
-
 
