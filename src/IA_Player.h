@@ -31,10 +31,6 @@ private:
     int bottom_virtual;
     int left_virtual;
     int right_virtual;
-    int coup_joue = 0;
-
-
-
     int N;
 
 public:
@@ -105,7 +101,6 @@ public:
         occupied[node] = true;
         ownership[node] = player;
         board[r][c] = player;
-        coup_joue++;
 
         // directions Hex (6 voisins)
         int dr[6] = {-1, -1, 0, 0, 1, 1};
@@ -151,14 +146,6 @@ public:
         }
     }
    
-    void resetNbCoupJoue(){
-        coup_joue = 0;
-    }
-    
-    int getNbCoupJoue(){
-        return coup_joue;
-    }
-
     void printBoardUF() {
         int N = board.size();
 
@@ -219,7 +206,8 @@ private:
         std::vector<int> untriedMoves;
     };   
     Node* _root = nullptr;
-    //-------------------MCTS-------------------//
+
+//-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
         double C = 2; //(2)^1/2 = 1.1414...1.41
         int child_number = 0;
@@ -238,6 +226,8 @@ private:
             }
             child_number++;
         }
+        // On met a jour la carte _uf[O(n)]
+        _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
         return best;
     }
    
@@ -271,11 +261,13 @@ private:
         child->untriedMoves = child->toVisit;
         node->children.push_back(child);
 
+        // On met a jour la carte _uf[O(n)]
+        _uf.applyMoveUF(child->moveRow, child->moveCol, child->playerJustMoved);
         return child;
     }
 
     char simulate(Node* node) {
-        _uf.reset();
+        //_uf.reset();
         std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
         std::vector<std::tuple<int,int, char>> moves_played_from_root;
         std::vector<std::pair<int,int>> available_moves;
@@ -285,10 +277,11 @@ private:
             return node->playerJustMoved;
         }
 
-        getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
-        simulateToThePresent(all_moves_played);
-        getAvailableMoves(node, available_moves, all_moves_played);
-        simulateToTheEnd(pl,available_moves);
+        //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
+        //simulateToThePresent(all_moves_played);
+        //getAvailableMoves(node, available_moves, all_moves_played);
+
+        simulateToTheEnd(pl,node->toVisit);
 
         return pl;
     }
@@ -306,8 +299,96 @@ private:
         node = node->parent;
        }
     }
-    //-------------------MCTS-------------------//
+//-------------------ALGO MCTS-------------------//
     
+public:
+    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _uf(taille), _id_max( (taille - 1) * taille + (taille - 1) ) {
+        assert(player == 'X' || player == 'O');
+    }
+
+    void printState() {
+        UnionFind uf(_taille);
+
+        for(auto [row,col,pl] : _historique_coups){
+            uf.applyMoveUF(row,col,pl);
+        }
+        std::cerr << "TABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
+        uf.printBoardUF();
+
+    }
+
+    void otherPlayerMove(int row, int col) override {
+        _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
+
+        if(_root != nullptr) {
+            for(auto child : _root->children) {
+                if(child->moveRow == row && child->moveCol == col) {
+                    _root = child;
+                    _root->parent = nullptr;
+                    // On met a jour la carte _uf[O(n)]
+                    _uf.reset();
+                    for(const auto& [r,c,pl]: _historique_coups) {
+                        _uf.applyMoveUF(r,c,pl);
+                    }
+                    return;
+                }
+            }
+            _root = nullptr; 
+            // On met a jour la carte _uf[O(n)]
+            _uf.reset();
+            for(const auto& [r,c,pl]: _historique_coups) {
+                _uf.applyMoveUF(r,c,pl);
+            }
+        }
+    }
+
+    std::tuple<int, int> getMove(Hex_Environement& hex) override {
+        int simulation = 0;
+        auto start = std::chrono::steady_clock::now();
+
+        if(_root == nullptr) {
+            _root = new Node();
+            _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
+            getAllMoves(hex);
+        }
+
+        while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
+            Node* node = _root;
+
+            // 1. SELECTION
+            while(node->untriedMoves.empty() && !node->children.empty()) {
+                node = select(node);
+            }
+            // 2. EXPANSION
+            if(!node->untriedMoves.empty()) {
+                node = expand(node);
+            }
+            // 3. SIMULATION
+            char winner = simulate(node);
+            simulation++;
+            // 4. BACKDROP
+            backpropagate(node,winner);
+
+            // On met a jour la carte _uf[ (m * O(n)) + 1]
+            _uf.reset();
+            for(const auto& [r,c,pl]: _historique_coups) {
+                _uf.applyMoveUF(r,c,pl);
+            }
+        }
+
+        auto end = std::chrono::steady_clock::now();
+        double seconds = std::chrono::duration<double>(end - start).count();
+        std::cout << "NPS = " << simulation / seconds << std::endl;
+
+        Node* best = FindBestChild(_root);
+        _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
+        _root = best;
+        _root->parent = nullptr;
+
+        return {best->moveRow, best->moveCol};
+    }
+
+private:
     void getAllMovesPlayed(Node* node, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , std::vector<std::tuple<int,int, char>>& moves_played_from_root){
         Node* current = node;
         for (auto &h : _historique_coups) {
@@ -329,12 +410,13 @@ private:
         }
     }
 
-    void simulateToTheEnd(char& pl, std::vector<std::pair<int,int>>& available_moves){
+    void simulateToTheEnd(char& pl, std::vector<int>& available_moves){
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
-            auto move = available_moves[random_index];
+            auto id = available_moves[random_index];
+            auto move = convertIDToCoordonate(id);
             _uf.applyMoveUF(move.first, move.second, pl);
             std::swap(available_moves[random_index], available_moves.back());
             auto move_out = available_moves.back();
@@ -410,77 +492,6 @@ private:
        return {id / _taille, id % _taille};
     }
 
-public:
-    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _uf(taille), _id_max( (taille - 1) * taille + (taille - 1) ) {
-        assert(player == 'X' || player == 'O');
-    }
-
-    void printState() {
-        UnionFind uf(_taille);
-
-        for(auto [row,col,pl] : _historique_coups){
-            uf.applyMoveUF(row,col,pl);
-        }
-        std::cerr << "TABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
-        uf.printBoardUF();
-
-    }
-
-    void otherPlayerMove(int row, int col) override {
-        // l'autre joueur à joué (row, col).
-        _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
-        //printState();
-
-        if(_root != nullptr) {
-            for(auto child : _root->children) {
-                if(child->moveRow == row && child->moveCol == col) {
-                    _root = child;
-                    _root->parent = nullptr;
-                    return;
-                }
-            }
-            std::cerr << "RIen trouve\n";
-            _root = nullptr; //Dans quel cas on ne trouve rien??
-        }
-    }
-
-    std::tuple<int, int> getMove(Hex_Environement& hex) override {
-        int simulation = 0;
-        auto start = std::chrono::steady_clock::now();
-
-        if(_root == nullptr) {
-            _root = new Node();
-            _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
-            getAllMoves(hex);
-        }
-
-        while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
-            Node* node = _root;
-            // 1. SELECTION
-            while(node->untriedMoves.empty() && !node->children.empty()) {
-                node = select(node);
-            }
-            // 2. EXPANSION
-            if(!node->untriedMoves.empty()) {
-                node = expand(node);
-            }
-            // 3. SIMULATION
-            char winner = simulate(node);
-            simulation++;
-            // 4. BACKDROP
-            backpropagate(node,winner);
-        }
-        auto end = std::chrono::steady_clock::now();
-        double seconds = std::chrono::duration<double>(end - start).count();
-        std::cout << "NPS = " << simulation / seconds << std::endl;
-
-        Node* best = FindBestChild(_root);
-        _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
-        _root = best;
-        _root->parent = nullptr;
-
-        return {best->moveRow, best->moveCol};
-    }
 };
 
 
