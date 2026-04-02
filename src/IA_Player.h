@@ -243,30 +243,31 @@ private:
    
     Node* expand(Node* node) {
         /**
-         * Fonction qui recoit un noeud courant recupere un mouvement possible
+         * Fonction qui recoit un noeud courant, recupere un mouvement possible
          * du noeud et creer un noeud enfant avec le mouvement recuperé
          * 
          * Return:      Le noeud enfant
         */
-        int moveID = node->untriedMoves.back();
-        auto [row, col] = convertIDToCoordonate(moveID);
+        int moveID;
+        Node* child = new Node();
+        
+        moveID = node->untriedMoves.back();        
         node->untriedMoves.pop_back();
 
-        Node* child = new Node();
-
         child->parent = node;
-        child->moveRow = row;
-        child->moveCol = col;
-
+        child->moveRow = convertIDToCoordonate(moveID).first;
+        child->moveCol = convertIDToCoordonate(moveID).second;
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
         child->toVisit = node->toVisit;
 
+        //maj de child->tovisit
         auto it = std::find(child->toVisit.begin(), child->toVisit.end(),moveID);
         if (it != child->toVisit.end()) {
             std::swap(*it,child->toVisit.back());
             child->toVisit.pop_back();
         }
-
+        // Ordre de visites aleatoire
+        std::shuffle(child->toVisit.begin(),child->toVisit.end(),_random_number_generator);
         child->untriedMoves = child->toVisit;
         node->children.push_back(child);
 
@@ -294,7 +295,7 @@ private:
 
     void backpropagate(Node* node, char winner) {
         /**
-         * La fonction remonte l'arbre MCTS et mets à jours les noeuds.
+         * La fonction remonte l'arbre MCTS et mets à jour les noeuds.
         */
        while (node != nullptr) {
         node->visits++;
@@ -347,8 +348,8 @@ private:
         }
     }
 
-
     void getAvailableMoves(Node* node, std::vector<std::pair<int, int>>& available_moves, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , UnionFind& uf){
+        
         for (const auto &id : node->toVisit){
             auto move = convertIDToCoordonate(id);
             if(uf.isValidMoveUF(move.first, move.second)){
@@ -359,7 +360,6 @@ private:
                 std::cerr << "Le UF contient\n" << std::endl;
                 for (auto [row,col,pl]: all_moves_played){
                     std::cerr << "[" << row << "," << col << "]\n" << std::endl;
-
                 }
             }
         }
@@ -391,6 +391,7 @@ private:
                 }
             }
         }
+        std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
     }
 
     int convertCoordonateToID(int r, int c) {
