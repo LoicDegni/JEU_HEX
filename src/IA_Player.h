@@ -504,6 +504,11 @@ private:
 
         _root->untriedMoves.insert(
             _root->untriedMoves.end(),
+            std::make_move_iterator(fourth_moves.begin()),
+            std::make_move_iterator(fourth_moves.end())
+        );
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
             std::make_move_iterator(second_moves.begin()),
             std::make_move_iterator(second_moves.end())
         );
@@ -511,11 +516,6 @@ private:
             _root->untriedMoves.end(),
             std::make_move_iterator(third_moves.begin()),
             std::make_move_iterator(third_moves.end())
-        );
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(fourth_moves.begin()),
-            std::make_move_iterator(fourth_moves.end())
         );
 
         _root->toVisit = _root->untriedMoves;
