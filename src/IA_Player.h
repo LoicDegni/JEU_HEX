@@ -327,7 +327,7 @@ public:
                 if(child->moveRow == row && child->moveCol == col) {
                     _root = child;
                     _root->parent = nullptr;
-                    std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+                    //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
                     // On met a jour la carte _uf[O(n)]
                     _uf.reset();
                     for(const auto& [r,c,pl]: _historique_coups) {
