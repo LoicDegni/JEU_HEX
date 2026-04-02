@@ -218,7 +218,7 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double base_C = 1.5; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
+        double base_C = 1.41; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
         double C = base_C - ((node->depth/(_taille * 2)) * 0.5);
         int child_number = 0;
 
@@ -228,7 +228,7 @@ private:
         for(auto child: node->children) {
             //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
 
-            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
+            double uct = (child->wins / (child->visits + 1e-6)) + base_C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
             {
@@ -382,7 +382,7 @@ public:
 
         auto end = std::chrono::steady_clock::now();
         double seconds = std::chrono::duration<double>(end - start).count();
-        //std::cout << "NPS = " << simulation / seconds << std::endl;
+        std::cout << "NPS = " << simulation / seconds << std::endl;
 
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
