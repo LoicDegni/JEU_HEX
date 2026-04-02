@@ -383,7 +383,7 @@ public:
 
         auto end = std::chrono::steady_clock::now();
         double seconds = std::chrono::duration<double>(end - start).count();
-        //std::cout << "NPS = " << simulation / seconds << std::endl;
+        std::cout << "NPS = " << simulation / seconds << std::endl;
 
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
