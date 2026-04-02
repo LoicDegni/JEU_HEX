@@ -226,7 +226,7 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+            //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
 
             double uct = (child->wins / (child->visits + 1e-6)) + base_C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
@@ -240,6 +240,8 @@ private:
  
         // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
+        std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+
         return best;
     }
    
