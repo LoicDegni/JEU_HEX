@@ -451,14 +451,21 @@ private:
     Node* FindBestChild(Node* node) {
         Node* best = nullptr;
         int maxVisits = -1;
-        int child_number = 0;
+        double bestWinrate = -1.0;
 
-        for(auto child: node->children) {    
-            if(child->visits > maxVisits) {
+        for (auto child : node->children) {
+            if (child->visits > maxVisits) {
                 maxVisits = child->visits;
+                bestWinrate = child->wins / (child->visits + 1e-6);
                 best = child;
+            } 
+            else if (child->visits == maxVisits) {
+                double winrate = child->wins / (child->visits + 1e-6);
+                if (winrate > bestWinrate) {
+                    bestWinrate = winrate;
+                    best = child;
+                }
             }
-            child_number++;
         }
         return best;
     }
