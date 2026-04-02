@@ -218,7 +218,7 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double C = 1.41;
+        double C = 1.2;
         Node* best = nullptr;
         double bestValue = -1e9;
 
@@ -342,7 +342,6 @@ public:
     }
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
-        int simulation = 0;
         auto start = std::chrono::steady_clock::now();
 
         if(_root == nullptr) {
@@ -364,7 +363,6 @@ public:
             }
             // 3. SIMULATION
             char winner = simulate(node);
-            simulation++;
             // 4. BACKDROP
             backpropagate(node,winner);
 
@@ -374,9 +372,6 @@ public:
                 _uf.applyMoveUF(r,c,pl);
             }
         }
-
-        auto end = std::chrono::steady_clock::now();
-        double seconds = std::chrono::duration<double>(end - start).count();
         //std::cout << "NPS = " << simulation / seconds << std::endl;
 
         Node* best = FindBestChild(_root);
