@@ -318,17 +318,6 @@ public:
         assert(player == 'X' || player == 'O');
     }
 
-    void printState() {
-        UnionFind uf(_taille);
-
-        for(auto [row,col,pl] : _historique_coups){
-            uf.applyMoveUF(row,col,pl);
-        }
-        std::cerr << "\nTABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
-        uf.printBoardUF();
-
-    }
-
     void otherPlayerMove(int row, int col) override {
         _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
 
@@ -353,6 +342,7 @@ public:
             for(const auto& [r,c,pl]: _historique_coups) {
                 _uf.applyMoveUF(r,c,pl);
             }
+
         }
     }
 
@@ -402,6 +392,18 @@ public:
         return {best->moveRow, best->moveCol};
     }
 
+//===============================================
+    void printState() {
+        UnionFind uf(_taille);
+
+        for(auto [row,col,pl] : _historique_coups){
+            uf.applyMoveUF(row,col,pl);
+        }
+        std::cerr << "\nTABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
+        uf.printBoardUF();
+
+    }
+//===============================================
 private:
     void getAllMovesPlayed(Node* node, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , std::vector<std::tuple<int,int, char>>& moves_played_from_root){
         Node* current = node;
@@ -498,13 +500,8 @@ private:
                 }
             }
         }
-        _root->untriedMoves = std::move(fourth_moves);
+        _root->untriedMoves = std::move(first_moves);
 
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(third_moves.begin()),
-            std::make_move_iterator(third_moves.end())
-        );
         _root->untriedMoves.insert(
             _root->untriedMoves.end(),
             std::make_move_iterator(second_moves.begin()),
@@ -512,8 +509,13 @@ private:
         );
         _root->untriedMoves.insert(
             _root->untriedMoves.end(),
-            std::make_move_iterator(first_moves.begin()),
-            std::make_move_iterator(first_moves.end())
+            std::make_move_iterator(third_moves.begin()),
+            std::make_move_iterator(third_moves.end())
+        );
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(fourth_moves.begin()),
+            std::make_move_iterator(fourth_moves.end())
         );
 
         _root->toVisit = _root->untriedMoves;
