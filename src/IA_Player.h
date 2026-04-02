@@ -492,18 +492,11 @@ private:
         for(unsigned int i=0; i < _taille; i++) {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
-                    if (isCenter(i,j)){
-                        first_moves.push_back(convertCoordonateToID(i,j));
-                    }
-                    else if (isInnerSection(i,j)){
-                        second_moves.push_back(convertCoordonateToID(i,j));
-                    }
-                    else if (isOuterSection(i,j)){
-                        third_moves.push_back(convertCoordonateToID(i,j));
-                    }
-                    else if (isBorder(i,j)) {
-                        fourth_moves.push_back(convertCoordonateToID(i,j));
-                    }
+                    int distance = distanceToCenter(i,j,_taille);
+                    if (distance <=1) first_moves.push_back(convertCoordonateToID(i,j));
+                    else if (distance <=3) second_moves.push_back(convertCoordonateToID(i,j));
+                    else if (distance <=5) third_moves.push_back(convertCoordonateToID(i,j));
+                    else fourth_moves.push_back(convertCoordonateToID(i,j));
                 }
             }
         }
@@ -531,6 +524,11 @@ private:
             auto move = convertIDToCoordonate(id);
             std:: cerr << "(" << move.first << "," << move.second << ") " << std::endl;
         }
+    }
+
+    int distanceToCenter(int r, int c, int N) {
+        int center = N / 2;
+        return std::abs(r - center) + std::abs(c - center);
     }
 
     std::pair<double, double> getPositionRatio(int r, int c) {
