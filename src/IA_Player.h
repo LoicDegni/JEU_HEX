@@ -534,12 +534,13 @@ private:
         //std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
     }
 
-    double getPositionRatio(int r, int c) {
+    std::pair<double, double> getPositionRatio(int r, int c) {
         double radius = (_taille % 2 == 0) ? (_taille /2) : (_taille/2 + 0.5);
-        double axis_position = (_player == 'X') ? c : r;
-        double position_ratio = (axis_position < radius) ? (radius - axis_position) : (axis_position - radius);
+
+        double row_position_ratio = (r < radius) ? (radius - r) : (r - radius);
+        double col_position_ratio = (c < radius) ? (radius - c) : (c - radius);
         
-        return position_ratio/radius;
+        return {row_position_ratio/radius, col_position_ratio/radius};
     }
 
     bool isCenter(int r, int c) {
@@ -547,7 +548,8 @@ private:
          * Retourne vrai si la position est inferieur 
          * à 20% de la moitié de la longueur(dans le centre)
         */
-        return getPositionRatio(r,c) <= 0.2; 
+        auto position = getPositionRatio(r,c);
+        return position.first <= 0.2 && position.second <=0.2 ; 
     }
 
     bool isInnerSection(int r, int c) {
@@ -555,17 +557,16 @@ private:
          * Retourne vrai si la position est entre 20% et 50% de la moitié 
          * de la longueur(dans le centre)
         */
-        double section = getPositionRatio(r,c);
-        return section > 0.2 && section <= 0.5; 
+        auto position = getPositionRatio(r,c);
+        return (position.first > 0.2 && position.first <=0.5) &&(position.second > 0.2 && position.second <=0.5)  ; 
     }
-
     bool isOuterSection(int r, int c) {
         /**
          * Retourne vrai si la position est entre 50% et 80% de la moitié 
          * de la longueur(dans le centre)
         */
-        double section = getPositionRatio(r,c);
-        return section > 0.5 && section <= 0.8; 
+        auto position = getPositionRatio(r,c);
+        return (position.first > 0.5 && position.first <=0.8) &&(position.second > 0.5 && position.second <=0.8)  ; 
     }
 
     bool isBorder(int r, int c) {
@@ -573,7 +574,8 @@ private:
          * Retourne vrai si la position est supérieur 
          * à 80% de la moitié de la longueur(dans le centre)
         */
-        return getPositionRatio(r,c) > 0.8; 
+        auto position = getPositionRatio(r,c);
+        return position.first > 0.8 && position.second >0.8 ;  
     }
 
 
