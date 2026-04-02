@@ -240,7 +240,7 @@ private:
  
         // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
-        std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+        std::cerr << "\nla profondeur est : " << best->depth << std::endl;
 
         return best;
     }
