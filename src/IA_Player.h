@@ -226,7 +226,7 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+            std::cerr << "\nla profondeur est : " << child->depth << std::endl;
 
             double uct = (child->wins / (child->visits + 1e-6)) + base_C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
@@ -382,7 +382,7 @@ public:
 
         auto end = std::chrono::steady_clock::now();
         double seconds = std::chrono::duration<double>(end - start).count();
-        //std::cout << "NPS = " << simulation / seconds << std::endl;
+        std::cout << "NPS = " << simulation / seconds << std::endl;
 
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
