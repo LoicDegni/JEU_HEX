@@ -376,7 +376,7 @@ public:
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
-        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
+        //std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
         _root->parent = nullptr;
 
         return {best->moveRow, best->moveCol};
