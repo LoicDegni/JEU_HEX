@@ -410,12 +410,16 @@ private:
     }
 
     void simulateToTheEnd(char& pl, std::vector<int>& available_moves){
-
-        for (const auto& id : available_moves) {
+        do {
             pl = (pl == 'X') ? 'O' : 'X';
+            std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
+            int random_index = uniform_moves_distribution(_random_number_generator);
+            auto id = available_moves[random_index];
             auto move = convertIDToCoordonate(id);
             _uf.applyMoveUF(move.first, move.second, pl);
-        }
+        }while (!_uf.hasWinner(pl));
+
+
         if (!_uf.hasWinner('X') && !_uf.hasWinner('O')){
             _uf.printBoardUF();
             std::cerr << "Erreur: available list est vide\n";
