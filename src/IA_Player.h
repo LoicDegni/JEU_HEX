@@ -209,7 +209,7 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double C = 2; //(2)^1/2 = 1.1414...1.41
+        double C = 1.41; //(2)^1/2 = 1.1414...1.41
         int child_number = 0;
 
         Node* best = nullptr;
