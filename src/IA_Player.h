@@ -198,9 +198,10 @@ private:
         std::vector<Node*> children;
         int moveRow, moveCol;
         char playerJustMoved;
-
+        int depth = 0;
         int visits = 0;
         double wins = 0;
+
 
         std::vector<int> toVisit;
         std::vector<int> untriedMoves;
@@ -209,14 +210,14 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double C = 1.0; //(2)^1/2 = 1.1414...1.41
+        double base_C = 1.5; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
+        double C = base_C - ((node->depth/_taille) * 0.3);
         int child_number = 0;
 
         Node* best = nullptr;
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-
             double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
@@ -226,6 +227,7 @@ private:
             }
             child_number++;
         }
+ 
         // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
         return best;
@@ -248,6 +250,7 @@ private:
         child->moveRow = convertIDToCoordonate(moveID).first;
         child->moveCol = convertIDToCoordonate(moveID).second;
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
+        child->depth = node->depth + 1;
         child->toVisit = node->toVisit;
 
         //maj de child->tovisit
@@ -267,7 +270,7 @@ private:
     }
 
     char simulate(Node* node) {
-        //_uf.reset();
+
         std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
         std::vector<std::tuple<int,int, char>> moves_played_from_root;
         std::vector<int> available_moves;
@@ -324,6 +327,7 @@ public:
                 if(child->moveRow == row && child->moveCol == col) {
                     _root = child;
                     _root->parent = nullptr;
+                    std::cerr << "\nla profondeur est : " << child->depth << std::endl;
                     // On met a jour la carte _uf[O(n)]
                     _uf.reset();
                     for(const auto& [r,c,pl]: _historique_coups) {
