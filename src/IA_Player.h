@@ -226,19 +226,21 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
+            std::cout << "NPS1 = " << std::endl;
             double exploitation_S_i = child->wins / (child->visits + 1e-6);
             double exploration_S_i = C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));
-
+            std::cout << "NPS2 = " << std::endl;
             double rave_ratio = child->rave_wins/child->rave_visits;
             double w = child->rave_wins/(child->visits + child->rave_visits + (4 * 0.001*0.001*child->visits*child->rave_visits));
             double score = (1-w)*exploitation_S_i + (w * rave_ratio) + exploration_S_i; 
-            
+            std::cout << "NPS3 = " << std::endl;
             if (score > bestValue) 
             {
                 bestValue = score;
                 best = child;
             }
         }
+        std::cout << "NPS4 = " << std::endl;
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
         return best;
     }
@@ -377,7 +379,6 @@ public:
             backpropagate(node,winner);
             resetUFToNow();
         }
-        std::cout << "NPS = " << std::endl;
 
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
