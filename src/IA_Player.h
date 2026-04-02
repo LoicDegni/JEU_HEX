@@ -344,6 +344,8 @@ public:
             for(const auto& [r,c,pl]: _historique_coups) {
                 _uf.applyMoveUF(r,c,pl);
             }
+            std::cerr << "\nÉTAT DU JEU\nApres le coup de : " << ((_player == 'X') ? 'O' : 'X') << "\n" << std::endl;
+            printState();
         }
     }
 
