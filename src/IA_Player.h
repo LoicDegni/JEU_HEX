@@ -218,6 +218,8 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
+            std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+
             double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
