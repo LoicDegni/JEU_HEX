@@ -344,7 +344,6 @@ public:
                     for(const auto& [r,c,pl]: _historique_coups) {
                         _uf.applyMoveUF(r,c,pl);
                     }
-                    printState();
                     return;
                 }
             }
@@ -354,7 +353,6 @@ public:
             for(const auto& [r,c,pl]: _historique_coups) {
                 _uf.applyMoveUF(r,c,pl);
             }
-            printState();
         }
     }
 
