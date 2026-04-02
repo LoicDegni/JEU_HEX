@@ -423,7 +423,7 @@ private:
         }
     }
 
-    void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int> played_moves){
+    void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int>& played_moves){
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
