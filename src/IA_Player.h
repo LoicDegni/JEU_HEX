@@ -377,7 +377,7 @@ public:
             backpropagate(node,winner);
             resetUFToNow();
         }
-        //std::cout << "NPS = " << simulation / seconds << std::endl;
+        std::cout << "NPS = " << simulation / seconds << std::endl;
 
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
