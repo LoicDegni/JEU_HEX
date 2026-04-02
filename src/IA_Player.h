@@ -210,6 +210,9 @@ private:
         int visits = 0;
         double wins = 0;
 
+        //Rave
+        int rave_visits = 0;
+        double rave_wins = 0;
 
         std::vector<int> toVisit;
         std::vector<int> untriedMoves;
@@ -223,11 +226,16 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
+            double exploitation_S_i = child->wins / (child->visits + 1e-6);
+            double exploration_S_i = C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));
 
-            if (uct > bestValue) 
+            double rave_ratio = child->rave_wins/child->rave_visits;
+            double w = child->rave_wins/(child->visits + child->rave_visits + (4 * 0.001*0.001*child->visits*child->rave_visits);
+            double score = (1-w)*exploitation_S_i + (w * rave_ratio) + exploration_S_i; 
+            
+            if (score > bestValue) 
             {
-                bestValue = uct;
+                bestValue = score;
                 best = child;
             }
         }
@@ -278,7 +286,7 @@ private:
 
         std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
         std::vector<std::tuple<int,int, char>> moves_played_from_root;
-        std::vector<int> available_moves;
+        std::vector<int> played_moves;
         char pl = node->playerJustMoved;
 
         if (node->toVisit.empty()) {
@@ -289,7 +297,8 @@ private:
         //simulateToThePresent(all_moves_played);
         //getAvailableMoves(node, available_moves, all_moves_played);
 
-        simulateToTheEnd(pl,node->toVisit);
+        simulateToTheEnd(pl,node->toVisit, played_moves);
+        raveSimulationUpdate(node, played_moves, pl);
         return pl;
     }
 
@@ -416,13 +425,14 @@ private:
         }
     }
 
-    void simulateToTheEnd(char& pl, std::vector<int>& available_moves){
+    void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int> played_moves){
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto id = available_moves[random_index];
             auto move = convertIDToCoordonate(id);
+            played_moves.push_back(id);
             _uf.applyMoveUF(move.first, move.second, pl);
         }while (!_uf.hasWinner(pl));
 
@@ -516,6 +526,11 @@ private:
         return std::abs(r - center) + std::abs(c - center);
     }
 
+    int distanceFromCurrent(int row, int col, int current_row, int current_col) {
+        int center = N / 2;
+        return std::abs(row - current_row) + std::abs(col - current_col);
+    }
+
     std::pair<double, double> getPositionRatio(int r, int c) {
         double radius = (_taille % 2 == 0) ? (_taille /2) : (_taille/2 + 0.5);
 
@@ -583,5 +598,18 @@ private:
             _uf.applyMoveUF(r,c,pl);
             }
     }
+
+    void raveSimulationUpdate(Node* node, std::vector<int>& played_moves, char winner) {
+        for (auto id : played_moves) {
+            auto move = convertIDToCoordonate(id);
+            for (auto child : node->children) {
+                if (child->moveRow==move.first && child->moveCol == move.second) {
+                    child->rave_visits++;
+                    if (child->playerJustMoved == winner) child->rave_wins++;
+                }
+            }
+        }
+    }
+
 };
 
