@@ -239,10 +239,7 @@ private:
                 best = child;
             }
         }
-        // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
-        //std::cerr << "\nla profondeur est : " << best->depth << std::endl;
-
         return best;
     }
    
@@ -526,11 +523,6 @@ private:
         return std::abs(r - center) + std::abs(c - center);
     }
 
-    int distanceFromCurrent(int row, int col, int current_row, int current_col) {
-        int center = N / 2;
-        return std::abs(row - current_row) + std::abs(col - current_col);
-    }
-
     std::pair<double, double> getPositionRatio(int r, int c) {
         double radius = (_taille % 2 == 0) ? (_taille /2) : (_taille/2 + 0.5);
 
@@ -610,6 +602,5 @@ private:
             }
         }
     }
-
 };
 
