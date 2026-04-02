@@ -316,7 +316,7 @@ public:
         for(auto [row,col,pl] : _historique_coups){
             uf.applyMoveUF(row,col,pl);
         }
-        std::cerr << "TABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
+        std::cerr << "\nTABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
         uf.printBoardUF();
 
     }
@@ -330,11 +330,13 @@ public:
                     _root = child;
                     _root->parent = nullptr;
                     //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
+
                     // On met a jour la carte _uf[O(n)]
                     _uf.reset();
                     for(const auto& [r,c,pl]: _historique_coups) {
                         _uf.applyMoveUF(r,c,pl);
                     }
+                    printState();
                     return;
                 }
             }
@@ -344,7 +346,6 @@ public:
             for(const auto& [r,c,pl]: _historique_coups) {
                 _uf.applyMoveUF(r,c,pl);
             }
-            std::cerr << "\nÉTAT DU JEU\nApres le coup de : " << ((_player == 'X') ? 'O' : 'X') << "\n" << std::endl;
             printState();
         }
     }
