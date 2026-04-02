@@ -394,7 +394,7 @@ public:
 
         auto end = std::chrono::steady_clock::now();
         double seconds = std::chrono::duration<double>(end - start).count();
-        std::cout << "NPS = " << simulation / seconds << std::endl;
+        //std::cout << "NPS = " << simulation / seconds << std::endl;
 
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
@@ -519,11 +519,6 @@ private:
         );
 
         _root->toVisit = _root->untriedMoves;
-
-        for(auto &id: _root->untriedMoves){
-            auto move = convertIDToCoordonate(id);
-            std:: cerr << "(" << move.first << "," << move.second << ") " << std::endl;
-        }
     }
 
     int distanceToCenter(int r, int c, int N) {
