@@ -210,8 +210,8 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double base_C = 1.8; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
-        double C = base_C - ((node->depth/_taille) * 0.6);
+        double base_C = 1.7; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
+        double C = base_C - ((node->depth/_taille) * 0.5);
         int child_number = 0;
 
         Node* best = nullptr;
