@@ -448,6 +448,7 @@ public:
     }
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
+        int simulation = 0;
         auto start = std::chrono::steady_clock::now();
 
         if(_root == nullptr) {
@@ -468,9 +469,14 @@ public:
             }
             // 3. SIMULATION
             char winner = simulate(node);
+            simulation++;
             // 4. BACKDROP
             backpropagate(node,winner);
         }
+        auto end = std::chrono::steady_clock::now();
+        double seconds = std::chrono::duration<double>(end - start).count();
+        std::cout << "NPS = " << simulation / seconds << std::endl;
+
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
