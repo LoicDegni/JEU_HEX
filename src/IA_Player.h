@@ -325,6 +325,7 @@ public:
             for(auto child : _root->children) {
                 if(child->moveRow == row && child->moveCol == col) {
                     _root = child;
+                    _root->depth++;
                     _root->parent = nullptr;
                     //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
 
