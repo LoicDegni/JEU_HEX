@@ -260,7 +260,7 @@ private:
             child->toVisit.pop_back();
         }
         // Ordre de visites aleatoire
-        std::shuffle(child->toVisit.begin(),child->toVisit.end(),_random_number_generator);
+        //std::shuffle(child->toVisit.begin(),child->toVisit.end(),_random_number_generator);
         child->untriedMoves = child->toVisit;
         node->children.push_back(child);
 
@@ -481,7 +481,7 @@ private:
                 }
             }
         }
-        std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
+        //std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
     }
 
     int convertCoordonateToID(int r, int c) {
