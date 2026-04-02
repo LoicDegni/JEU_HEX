@@ -218,11 +218,7 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double base_C = 1.6; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
-        double current_C = base_C - (node->depth/(_taille * 2)) * 0.4;
-        double C = (current_C < 0.6 ) ? 0.6 : current_C;
-        int child_number = 0;
-
+        double C = 1.41;
         Node* best = nullptr;
         double bestValue = -1e9;
 
@@ -234,9 +230,7 @@ private:
                 bestValue = uct;
                 best = child;
             }
-            child_number++;
         }
- 
         // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
         //std::cerr << "\nla profondeur est : " << best->depth << std::endl;
@@ -388,6 +382,7 @@ public:
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
+        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
         _root->parent = nullptr;
 
         return {best->moveRow, best->moveCol};
@@ -571,7 +566,6 @@ private:
         auto position = getPositionRatio(r,c);
         return position.first > 0.8 && position.second >0.8 ;  
     }
-
 
     int convertCoordonateToID(int r, int c) {
         /**
