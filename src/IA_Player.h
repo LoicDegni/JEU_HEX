@@ -95,6 +95,8 @@ public:
         for (int i = 0; i < size; i++) {
             parent[i] = i;
             rank[i] = 0;
+            occupied[i] = false;
+            ownership[i] = '-';
         }
     }
 
@@ -202,6 +204,7 @@ private:
     std::vector< std::tuple<unsigned int, unsigned int, char> > _historique_coups;
     std::mt19937 _random_number_generator;
     int _id_max;
+    UnionFind _uf;
 
     struct Node {
         Node* parent= nullptr;
@@ -275,7 +278,7 @@ private:
     }
 
     char simulate(Node* node) {
-        UnionFind uf(_taille);
+        _uf.reset();
         std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
         std::vector<std::tuple<int,int, char>> moves_played_from_root;
         std::vector<std::pair<int,int>> available_moves;
@@ -286,9 +289,9 @@ private:
         }
 
         getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
-        simulateToThePresent(all_moves_played, uf);
-        getAvailableMoves(node, available_moves, all_moves_played, uf);
-        simulateToTheEnd(pl,available_moves,uf);
+        simulateToThePresent(all_moves_played, _uf);
+        getAvailableMoves(node, available_moves, all_moves_played, _uf);
+        simulateToTheEnd(pl,available_moves,_uf);
 
         return pl;
     }
@@ -323,39 +326,39 @@ private:
         all_moves_played.insert(all_moves_played.end(), moves_played_from_root.begin(), moves_played_from_root.end());
     }
     
-    void simulateToThePresent(std::vector< std::tuple<unsigned int, unsigned int, char>>& all_moves_played, UnionFind& uf) {
+    void simulateToThePresent(std::vector< std::tuple<unsigned int, unsigned int, char>>& all_moves_played) {
         for(auto [row,col,pl] : all_moves_played){
-            uf.applyMoveUF(row,col,pl);
+            _uf.applyMoveUF(row,col,pl);
         }
     }
 
-    void simulateToTheEnd(char& pl, std::vector<std::pair<int,int>>& available_moves, UnionFind& uf){
+    void simulateToTheEnd(char& pl, std::vector<std::pair<int,int>>& available_moves){
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto move = available_moves[random_index];
-            uf.applyMoveUF(move.first, move.second, pl);
+            _uf.applyMoveUF(move.first, move.second, pl);
             std::swap(available_moves[random_index], available_moves.back());
             auto move_out = available_moves.back();
             available_moves.pop_back();
-        }while (!uf.hasWinner(pl) && !available_moves.empty());
+        }while (!_uf.hasWinner(pl) && !available_moves.empty());
 
-        if(!uf.hasWinner('X') && !uf.hasWinner('O')){
-            uf.printBoardUF();
+        if(!_uf.hasWinner('X') && !_uf.hasWinner('O')){
+            _uf.printBoardUF();
             std::cerr << "Erreur: available list est vide\n";
             std::exit(EXIT_FAILURE);
         }
     }
 
-    void getAvailableMoves(Node* node, std::vector<std::pair<int, int>>& available_moves, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , UnionFind& uf){
+    void getAvailableMoves(Node* node, std::vector<std::pair<int, int>>& available_moves, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played){
         
         for (const auto &id : node->toVisit){
             auto move = convertIDToCoordonate(id);
-            if(uf.isValidMoveUF(move.first, move.second)){
+            if(_uf.isValidMoveUF(move.first, move.second)){
                 available_moves.push_back(move);
             }else {
-                uf.printBoardUF();
+                _uf.printBoardUF();
                 std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
                 std::cerr << "Le UF contient\n" << std::endl;
                 for (auto [row,col,pl]: all_moves_played){
@@ -411,7 +414,7 @@ private:
     }
 
 public:
-    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _id_max( (taille - 1) * taille + (taille - 1) ) {
+    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _uf(taille), _id_max( (taille - 1) * taille + (taille - 1) ) {
         assert(player == 'X' || player == 'O');
     }
 
@@ -452,14 +455,12 @@ public:
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
             getAllMoves(hex);
         }
-        int nb_selection = 0;
+
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
             Node* node = _root;
             // 1. SELECTION
             while(node->untriedMoves.empty() && !node->children.empty()) {
                 node = select(node);
-                nb_selection++;
-                //std::cerr << "Il y a eu : " << nb_selection <<  "selections\nLast move  est : (" << node->moveRow << "," << node->moveCol << ")\nJoue par : " << node->playerJustMoved << std::endl;
             }
             // 2. EXPANSION
             if(!node->untriedMoves.empty()) {
@@ -474,7 +475,7 @@ public:
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
         _root->parent = nullptr;
-        std::cerr << "Le meilleur move pour " << _player << " est : (" << best->moveRow << "," << best->moveCol << ")\n" << std::endl;
+
         return {best->moveRow, best->moveCol};
     }
 };
