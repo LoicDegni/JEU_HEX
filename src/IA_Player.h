@@ -524,14 +524,13 @@ private:
             std::make_move_iterator(first_moves.begin()),
             std::make_move_iterator(first_moves.end())
         );
+
         _root->toVisit = _root->untriedMoves;
+
         for(auto &id: _root->untriedMoves){
             auto move = convertIDToCoordonate(id);
             std:: cerr << "(" << move.first << "," << move.second << ") " << std::endl;
         }
-        
-
-        //std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
     }
 
     std::pair<double, double> getPositionRatio(int r, int c) {
@@ -549,17 +548,18 @@ private:
          * à 20% de la moitié de la longueur(dans le centre)
         */
         auto position = getPositionRatio(r,c);
-        return position.first <= 0.2 && position.second <=0.2 ; 
+        return position.first <= 0.1 && position.second <=0.1 ; 
     }
-
+  
     bool isInnerSection(int r, int c) {
         /**
          * Retourne vrai si la position est entre 20% et 50% de la moitié 
          * de la longueur(dans le centre)
         */
         auto position = getPositionRatio(r,c);
-        return (position.first > 0.2 && position.first <=0.5) &&(position.second > 0.2 && position.second <=0.5)  ; 
+        return (position.first > 0.1 && position.first <=0.5) &&(position.second > 0.1 && position.second <=0.5)  ; 
     }
+  
     bool isOuterSection(int r, int c) {
         /**
          * Retourne vrai si la position est entre 50% et 80% de la moitié 
