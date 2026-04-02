@@ -501,7 +501,7 @@ private:
                     else if (isOuterSection(i,j)){
                         third_moves.push_back(convertCoordonateToID(i,j));
                     }
-                    else (isBorder(i,j)){
+                    else if (isBorder(i,j)) {
                         fourth_moves.push_back(convertCoordonateToID(i,j));
                     }
                 }
