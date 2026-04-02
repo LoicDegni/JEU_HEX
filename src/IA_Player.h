@@ -289,9 +289,9 @@ private:
         }
 
         getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
-        simulateToThePresent(all_moves_played, _uf);
-        getAvailableMoves(node, available_moves, all_moves_played, _uf);
-        simulateToTheEnd(pl,available_moves,_uf);
+        simulateToThePresent(all_moves_played);
+        getAvailableMoves(node, available_moves, all_moves_played);
+        simulateToTheEnd(pl,available_moves);
 
         return pl;
     }
@@ -326,7 +326,7 @@ private:
         all_moves_played.insert(all_moves_played.end(), moves_played_from_root.begin(), moves_played_from_root.end());
     }
     
-    void simulateToThePresent(std::vector< std::tuple<unsigned int, unsigned int, char>>& all_moves_played) {
+    void simulateToThePresent(std::vector<std::tuple<unsigned int, unsigned int, char>>& all_moves_played) {
         for(auto [row,col,pl] : all_moves_played){
             _uf.applyMoveUF(row,col,pl);
         }
