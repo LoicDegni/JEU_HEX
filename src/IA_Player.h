@@ -129,6 +129,14 @@ public:
         }
     }
 
+    void undoMoveUF(int r, int c, char player) {
+
+    }
+
+    void undoSimulationMoves(std::vector<std::tuple<int,int,char>> simulation_moves) {
+
+    }
+
     bool isValidMoveUF(int r, int c) {
         /**
          * Fonction qui verifie si un move recu est valide.
@@ -476,18 +484,93 @@ private:
     }
 
     void getAllMoves(Hex_Environement& hex) {
-        std::vector<std::pair<int,int>> moves;
-        // O(n^2)
+        std::vector<int> first_moves;
+        std::vector<int> second_moves;
+        std::vector<int>  third_moves;
+        std::vector<int>  fourth_moves;
+
         for(unsigned int i=0; i < _taille; i++) {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
-                    _root->untriedMoves.push_back(convertCoordonateToID(i,j));
-                    _root->toVisit.push_back(convertCoordonateToID(i,j));
+                    if (isCenter(i,j)){
+                        first_moves.push_back(convertCoordonateToID(i,j));
+                    }
+                    else if (isInnerSection(i,j)){
+                        second_moves.push_back(convertCoordonateToID(i,j));
+                    }
+                    else if (isOuterSection(i,j)){
+                        third_moves.push_back(convertCoordonateToID(i,j));
+                    }
+                    else (isBorder(i,j)){
+                        fourth_moves.push_back(convertCoordonateToID(i,j));
+                    }
                 }
             }
         }
+        _root->untriedMoves = std::move(fourth_moves);
+
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(third_moves.begin()),
+            std::make_move_iterator(third_moves.end())
+        );
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(second_moves.begin()),
+            std::make_move_iterator(second_moves.end())
+        );
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(first_moves.begin()),
+            std::make_move_iterator(first_moves.end())
+        );
+        _root->toVisit = _root->untriedMoves;
+
         //std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
     }
+
+    double getPositionRatio(int r, int c) {
+        double radius = (_taille % 2 == 0) ? (_taille /2) : (_taille/2 + 0.5);
+        double axis_position = (_player == 'X') ? c : r;
+        double position_ratio = (axis_position < radius) ? (radius - axis_position) : (axis_position - radius);
+        
+        return position_ratio/radius;
+    }
+
+    bool isCenter(int r, int c) {
+        /**
+         * Retourne vrai si la position est inferieur 
+         * à 20% de la moitié de la longueur(dans le centre)
+        */
+        return getPositionRatio(r,c) <= 0.2; 
+    }
+
+    bool isInnerSection(int r, int c) {
+        /**
+         * Retourne vrai si la position est entre 20% et 50% de la moitié 
+         * de la longueur(dans le centre)
+        */
+        double section = getPositionRatio(r,c);
+        return section > 0.2 && section <= 0.5; 
+    }
+
+    bool isOuterSection(int r, int c) {
+        /**
+         * Retourne vrai si la position est entre 50% et 80% de la moitié 
+         * de la longueur(dans le centre)
+        */
+        double section = getPositionRatio(r,c);
+        return section > 0.5 && section <= 0.8; 
+    }
+
+    bool isBorder(int r, int c) {
+        /**
+         * Retourne vrai si la position est supérieur 
+         * à 80% de la moitié de la longueur(dans le centre)
+        */
+        return getPositionRatio(r,c) > 0.8; 
+    }
+
 
     int convertCoordonateToID(int r, int c) {
         /**
