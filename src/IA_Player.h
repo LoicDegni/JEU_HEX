@@ -270,7 +270,7 @@ private:
         //_uf.reset();
         std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
         std::vector<std::tuple<int,int, char>> moves_played_from_root;
-        std::vector<std::pair<int,int>> available_moves;
+        std::vector<int> available_moves;
         char pl = node->playerJustMoved;
 
         if (node->toVisit.empty()) {
@@ -280,6 +280,7 @@ private:
         //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
         //simulateToThePresent(all_moves_played);
         //getAvailableMoves(node, available_moves, all_moves_played);
+
 
         simulateToTheEnd(pl,node->toVisit);
 
@@ -411,19 +412,13 @@ private:
     }
 
     void simulateToTheEnd(char& pl, std::vector<int>& available_moves){
-        do {
+
+        for (const auto& id : available_moves) {
             pl = (pl == 'X') ? 'O' : 'X';
-            std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
-            int random_index = uniform_moves_distribution(_random_number_generator);
-            auto id = available_moves[random_index];
             auto move = convertIDToCoordonate(id);
             _uf.applyMoveUF(move.first, move.second, pl);
-            std::swap(available_moves[random_index], available_moves.back());
-            auto move_out = available_moves.back();
-            available_moves.pop_back();
-        }while (!_uf.hasWinner(pl) && !available_moves.empty());
-
-        if(!_uf.hasWinner('X') && !_uf.hasWinner('O')){
+        }
+        if (!_uf.hasWinner('X') && !_uf.hasWinner('O')){
             _uf.printBoardUF();
             std::cerr << "Erreur: available list est vide\n";
             std::exit(EXIT_FAILURE);
