@@ -218,15 +218,16 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double base_C = 1.2; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
-        double C = base_C - ((node->depth/(_taille * 2)) * 0.5);
+        double base_C = 1.7; //(2)^1/2 = 1.1414...1.41 1.0 - 1.5
+        double current_C = base_C - (node->depth/(_taille * 2)) * 0.1;
+        double C = (current_C < 0.8 ) ? 0.8 : current_C;
         int child_number = 0;
 
         Node* best = nullptr;
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            double uct = (child->wins / (child->visits + 1e-6)) + base_C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
+            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
             {
