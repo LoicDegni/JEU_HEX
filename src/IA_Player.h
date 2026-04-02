@@ -227,11 +227,11 @@ private:
 
         for(auto child: node->children) {
             std::cout << "NPS1 = " << std::endl;
-            double exploitation_S_i = child->wins / (child->visits + 1e-6);
-            double exploration_S_i = C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));
+            double exploitation_S_i = child->wins / (child->visits);
+            double exploration_S_i = C * sqrt(log(node->visits) / (child->visits));
             std::cout << "NPS2 = " << std::endl;
-            double rave_ratio = (child->rave_wins/child->rave_visits +1e-6);
-            double w = ( child->rave_wins/(child->visits + child->rave_visits + 1e-6 + (4 * 0.001*0.001*child->visits*child->rave_visits)) );
+            double rave_ratio = child->rave_wins/(child->rave_visits +1e-6);
+            double w = ( child->rave_visits/(child->visits + child->rave_visits + 1e-6) );
             double score = ((1 - w)*exploitation_S_i) + (w * rave_ratio) + exploration_S_i; 
             std::cout << "NPS3 = " << std::endl;
             if (score > bestValue) 
