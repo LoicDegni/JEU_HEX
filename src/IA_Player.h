@@ -525,6 +525,11 @@ private:
             std::make_move_iterator(first_moves.end())
         );
         _root->toVisit = _root->untriedMoves;
+        for(auto &id: _root->untriedMoves){
+            auto move = convertIDToCoordonate(id);
+            std:: cerr << "(" << move.first << "," << move.second << ") " << std::endl;
+        }
+        
 
         //std::shuffle(_root->untriedMoves.begin(),_root->untriedMoves.end(),_random_number_generator);
     }
