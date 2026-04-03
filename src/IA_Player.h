@@ -223,7 +223,7 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
+            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits) / (child->visits + 1e-6));
 
             if (uct > bestValue) 
             {
@@ -275,19 +275,11 @@ private:
     }
 
     char simulate(Node* node) {
-
-        std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
-        std::vector<std::tuple<int,int, char>> moves_played_from_root;
-        std::vector<int> available_moves;
         char pl = node->playerJustMoved;
 
         if (node->toVisit.empty()) {
             return node->playerJustMoved;
         }
-
-        //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
-        //simulateToThePresent(all_moves_played);
-        //getAvailableMoves(node, available_moves, all_moves_played);
 
         simulateToTheEnd(pl,node->toVisit);
         return pl;
