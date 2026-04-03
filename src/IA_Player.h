@@ -341,7 +341,7 @@ private:
         std::vector<int>  third_moves;
         std::vector<int>  fourth_moves;
 
-        for(unsigned int i=0; i < _taille; i++) {
+        /*for(unsigned int i=0; i < _taille; i++) {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
                     int distance = distanceToCenter(i,j,_taille);
@@ -351,8 +351,16 @@ private:
                     else fourth_moves.push_back(convertCoordonateToID(i,j));
                 }
             }
+        }*/
+        for(unsigned int i=0; i < _taille; i++) {
+            for(unsigned int j = 0; j< _taille; j++) {
+                if(hex.isValidMove(i,j)) {
+                    _root->toVisit.push_back(convertCoordonateToID(i,j));
+                    _root->untriedMoves.push_back(convertCoordonateToID(i,j));
+                }
+            }
         }
-        _root->untriedMoves = std::move(first_moves);
+        /*_root->untriedMoves = std::move(first_moves);
         _root->untriedMoves.insert(
             _root->untriedMoves.end(),
             std::make_move_iterator(second_moves.begin()),
@@ -369,7 +377,7 @@ private:
             std::make_move_iterator(fourth_moves.end())
         );
 
-        _root->toVisit = _root->untriedMoves;
+        _root->toVisit = _root->untriedMoves;*/
     }
 
     void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int>& played_moves){
