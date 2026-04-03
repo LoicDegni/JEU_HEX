@@ -216,7 +216,6 @@ private:
     };   
     Node* _root = nullptr;
 
-
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
         double C = 0.85;
@@ -224,7 +223,7 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits) / (child->visits + 1e-6));   //log(1) = 0
+            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits + 1) / (child->visits + 1e-6));   //log(1) = 0
 
             if (uct > bestValue) 
             {
@@ -286,6 +285,10 @@ private:
             return node->playerJustMoved;
         }
 
+        //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
+        //simulateToThePresent(all_moves_played);
+        //getAvailableMoves(node, available_moves, all_moves_played);
+
         simulateToTheEnd(pl,node->toVisit);
         return pl;
     }
@@ -329,7 +332,12 @@ public:
                 }
             }
             _root = nullptr; 
-            resetUFToNow();
+            // On met a jour la carte _uf[O(n)]
+            _uf.reset();
+            for(const auto& [r,c,pl]: _historique_coups) {
+                _uf.applyMoveUF(r,c,pl);
+            }
+
         }
     }
 
@@ -363,10 +371,12 @@ public:
             backpropagate(node,winner);
             resetUFToNow();
         }
+        //std::cout << "NPS = " << simulation / seconds << std::endl;
+
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
-        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
+        //std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
         _root->parent = nullptr;
 
         return {best->moveRow, best->moveCol};
@@ -573,6 +583,4 @@ private:
             _uf.applyMoveUF(r,c,pl);
             }
     }
-
 };
-
