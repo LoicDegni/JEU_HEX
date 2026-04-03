@@ -167,7 +167,7 @@ private:
          *  Upper Confidence Trees (UCT)
          *  RAVE (Rapid Action Value Estimation)
         */
-        double C = 1.0;
+        double C = 1.15;
         Node* best = nullptr;
         double bestValue = -1e9;
 
@@ -320,8 +320,6 @@ public:
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
         _root->parent = nullptr;
-        //std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
-
         return {best->moveRow, best->moveCol};
     }
 
@@ -330,28 +328,7 @@ private:
         /**
          * Fonction qui recupere tout les coups valides restant
          * dans la partie et les mets à jours au noeud racine.
-         * 
-         * Heuristique: Les coups sont mis dans le tableau en ordre  
-         * croissant de la distance de Manhattan entre les coups 
-         * et le centre. Cela permets de parcourir les expansions initiales
-         * du centre vers les extremités.
         */
-        std::vector<int> first_moves;
-        std::vector<int> second_moves;
-        std::vector<int>  third_moves;
-        std::vector<int>  fourth_moves;
-
-        /*for(unsigned int i=0; i < _taille; i++) {
-            for(unsigned int j = 0; j< _taille; j++) {
-                if(hex.isValidMove(i,j)) {
-                    int distance = distanceToCenter(i,j,_taille);
-                    if (distance <=1) first_moves.push_back(convertCoordonateToID(i,j));
-                    else if (distance <=3) second_moves.push_back(convertCoordonateToID(i,j));
-                    else if (distance <=5) third_moves.push_back(convertCoordonateToID(i,j));
-                    else fourth_moves.push_back(convertCoordonateToID(i,j));
-                }
-            }
-        }*/
         for(unsigned int i=0; i < _taille; i++) {
             for(unsigned int j = 0; j< _taille; j++) {
                 if(hex.isValidMove(i,j)) {
@@ -360,24 +337,6 @@ private:
                 }
             }
         }
-        /*_root->untriedMoves = std::move(first_moves);
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(second_moves.begin()),
-            std::make_move_iterator(second_moves.end())
-        );
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(third_moves.begin()),
-            std::make_move_iterator(third_moves.end())
-        );
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(fourth_moves.begin()),
-            std::make_move_iterator(fourth_moves.end())
-        );
-
-        _root->toVisit = _root->untriedMoves;*/
     }
 
     void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int>& played_moves){
