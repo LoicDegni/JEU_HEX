@@ -1,3 +1,12 @@
+/**
+ * INF4230 - INTELLIGENCE ARTIFICIELLE
+ * UQAM | Faculte des sciences | Departement d'informatique
+ * TP3 : Jeu de Hex
+ * PRENOM, NOM : Kaikou Loic Degni
+ * CODE PERMANENT : DEGK24059500
+ * 
+*/
+
 #pragma once
 
 #include <tuple>
@@ -20,12 +29,8 @@ class UnionFind {
 private:
     std::vector<int> parent;
     std::vector<int> rank;
-
     std::vector<bool> occupied;
     std::vector<char> ownership;
-
-    std::vector<std::vector<char>> board;
-
 
     int top_virtual;
     int bottom_virtual;
@@ -35,19 +40,16 @@ private:
 
 public:
     UnionFind(int n) : N(n) {
-        int size = N * N + 4; // +4 virtual nodes
-
+        int size = N * N + 4; 
         parent.resize(size);
         occupied.resize(size);
         ownership.resize(size,'-');
         rank.resize(size, 0);
-        board.resize(N, std::vector<char>(N, '-'));
 
         for (int i = 0; i < size; i++) {
             parent[i] = i;
             occupied[i] = false;
         }
-
         top_virtual = N * N;
         bottom_virtual = N * N + 1;
         left_virtual = N * N + 2;
@@ -100,49 +102,27 @@ public:
         int node = id(r, c);
         occupied[node] = true;
         ownership[node] = player;
-        board[r][c] = player;
-
-        // directions Hex (6 voisins)
+        //(6 voisins)
         int dr[6] = {-1, -1, 0, 0, 1, 1};
         int dc[6] = {0, 1, -1, 1, -1, 0};
 
         for (int i = 0; i < 6; i++) {
             int nr = r + dr[i];
             int nc = c + dc[i];
-
             if (nr >= 0 && nr < N && nc >= 0 && nc < N) {
-                if (occupied[id(nr, nc)] && ownership[id(nr, nc)] == player) {
+                if (occupied[id(nr, nc)] && ownership[id(nr, nc)] == player)
                     unite(node, id(nr, nc));
-                }
             }
         }
-
-        // connexions bords
+        // connexions aux au bord
         if (player == 'O') {
             if (r == 0) unite(node, top_virtual);
             if (r == N - 1) unite(node, bottom_virtual);
         }
-
         if (player == 'X') {
             if (c == 0) unite(node, left_virtual);
             if (c == N - 1) unite(node, right_virtual);
         }
-    }
-
-    void undoMoveUF(int r, int c, char player) {
-
-    }
-
-    void undoSimulationMoves(std::vector<std::tuple<int,int,char>> simulation_moves) {
-
-    }
-
-    bool isValidMoveUF(int r, int c) {
-        /**
-         * Fonction qui verifie si un move recu est valide.
-         * 
-        */
-       return !occupied[id(r,c)];
     }
 
     bool hasWinner(char player) {
@@ -153,43 +133,6 @@ public:
             return connected(left_virtual, right_virtual);
         }
     }
-   
-    void printBoardUF() {
-        int N = board.size();
-
-        for (int i = 0; i < N; i++) {
-            // décalage (indentation)
-            for (int k = 0; k < i; k++) {
-                std::cerr << " ";
-            }
-
-            // affichage des cellules
-            for (int j = 0; j < N; j++) {
-                std::cerr << board[i][j];
-
-                if (j < N - 1) {
-                    std::cerr << " - ";
-                }
-            }
-
-            std::cerr << std::endl;
-
-            // lignes de liaison (diagonales)
-            if (i < N - 1) {
-                for (int k = 0; k < i; k++) {
-                    std::cerr << " ";
-                }
-
-                std::cerr << " ";
-
-                for (int j = 0; j < N - 1; j++) {
-                    std::cerr << "\\ / ";
-                }
-
-                std::cerr << "\\" << std::endl;
-            }
-        }
-    }
 };
 
 class IA_Player : public Player_Interface {
@@ -198,7 +141,6 @@ private:
     unsigned int _taille;
     std::vector< std::tuple<unsigned int, unsigned int, char> > _historique_coups;
     std::mt19937 _random_number_generator;
-    int _id_max;
     UnionFind _uf;
 
     struct Node {
@@ -206,10 +148,8 @@ private:
         std::vector<Node*> children;
         int moveRow, moveCol;
         char playerJustMoved;
-        int depth = 0;
         int visits = 0;
         double wins = 0;
-
         //Rave
         int rave_visits = 0;
         double rave_wins = 0;
@@ -218,9 +158,15 @@ private:
         std::vector<int> untriedMoves;
     };   
     Node* _root = nullptr;
-
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
+        /**
+         * La fonction selectionne le noeud le plus prometteur
+         * parmis tous les enfants du noeud courant.
+         * Stratégie:
+         *  Upper Confidence Trees (UCT)
+         *  RAVE (Rapid Action Value Estimation)
+        */
         double C = 1.0;
         Node* best = nullptr;
         double bestValue = -1e9;
@@ -228,6 +174,7 @@ private:
         for(auto child: node->children) {
             double exploitation_S_i = child->wins / (child->visits);
             double exploration_S_i = C * sqrt(log(node->visits) / (child->visits));
+            //On previent le cas ou child->rave_visits = 0
             double rave_ratio = child->rave_wins/(child->rave_visits +1e-6);
             double w = ( child->rave_visits/(child->visits + child->rave_visits + 1e-6) );
             double score = ((1 - w)*exploitation_S_i) + (w * rave_ratio) + exploration_S_i; 
@@ -258,8 +205,7 @@ private:
         child->moveRow = convertIDToCoordonate(moveID).first;
         child->moveCol = convertIDToCoordonate(moveID).second;
         child->playerJustMoved = (node->playerJustMoved == 'X') ? 'O' : 'X';
-        child->depth = node->depth;
-        child->depth++;
+
         child->toVisit = node->toVisit;
 
         //maj de child->tovisit
@@ -268,7 +214,6 @@ private:
             std::swap(*it,child->toVisit.back());
             child->toVisit.pop_back();
         }
-        // Ordre de visites aleatoire
         child->untriedMoves = child->toVisit;
         node->children.push_back(child);
 
@@ -278,20 +223,17 @@ private:
     }
 
     char simulate(Node* node) {
-
-        std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
-        std::vector<std::tuple<int,int, char>> moves_played_from_root;
+        /**
+         * La fonction simule toute la suite de la partie 
+         * du noeud courant, mets à jour les variables
+         * et retourne le gagnant.
+        */
         std::vector<int> played_moves;
         char pl = node->playerJustMoved;
 
         if (node->toVisit.empty()) {
             return node->playerJustMoved;
         }
-
-        //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
-        //simulateToThePresent(all_moves_played);
-        //getAvailableMoves(node, available_moves, all_moves_played);
-
         simulateToTheEnd(pl,node->toVisit, played_moves);
         raveSimulationUpdate(node, played_moves, pl);
         return pl;
@@ -311,13 +253,21 @@ private:
        }
     }
 //-------------------ALGO MCTS-------------------//
-    
+
 public:
-    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _uf(taille), _id_max( (taille - 1) * taille + (taille - 1) ) {
+    IA_Player(char player, unsigned int taille=10) : _player(player), _taille(taille), _random_number_generator(std::random_device{}()), _uf(taille) {
         assert(player == 'X' || player == 'O');
     }
 
     void otherPlayerMove(int row, int col) override {
+        /**
+         * Lorsque l'agent le coup du joueur, 
+         * il met à jour sont historique interne et 
+         * avance dans l'arbre avec l'etat courant. 
+         * Si il ne trouve pas de noeud dans son arbre qui correspond
+         * au coup joué par l'adversaire, il creer une nouvelle racine 
+         * avec l'etat courant
+        */
         _historique_coups.push_back({row, col, (_player == 'X') ? 'O' : 'X'});
 
         if(_root != nullptr) {
@@ -325,27 +275,22 @@ public:
                 if(child->moveRow == row && child->moveCol == col) {
                     _root = child;
                     _root->parent = nullptr;
-                    //std::cerr << "\nla profondeur est : " << child->depth << std::endl;
-
                     // On met a jour la carte _uf[O(n)]
-                    _uf.reset();
-                    for(const auto& [r,c,pl]: _historique_coups) {
-                        _uf.applyMoveUF(r,c,pl);
-                    }
-                    return;
+                    resetUFToNow();
                 }
             }
             _root = nullptr; 
             // On met a jour la carte _uf[O(n)]
-            _uf.reset();
-            for(const auto& [r,c,pl]: _historique_coups) {
-                _uf.applyMoveUF(r,c,pl);
-            }
-
+            resetUFToNow();
         }
     }
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
+        /**
+         * Fonction qui à partir d'un noeud courant, explore l'arbre
+         * MCTS le plus souvent possible pendant 1.9 secondes. puis retourne
+         * le noeud le plus prometteur.
+        */
         auto start = std::chrono::steady_clock::now();
         if(_root == nullptr) {
             _root = new Node();
@@ -356,20 +301,17 @@ public:
         while (std::chrono::steady_clock::now() - start < std::chrono::milliseconds(1900)) {
             Node* node = _root;
             // 1. Sélection
-            while(node->untriedMoves.empty() && !node->children.empty()) {
+            while(node->untriedMoves.empty() && !node->children.empty())
                 node = select(node);
-            }
             // 2. Expansion
-            if(!node->untriedMoves.empty()) {
+            if(!node->untriedMoves.empty())
                 node = expand(node);
-            }
             // 3. Simulation
             char winner;
             if (!_uf.hasWinner(node->playerJustMoved)) 
                 winner = simulate(node);
             else
                 winner = node->playerJustMoved;
-
             // 4. Rétropropagation
             backpropagate(node,winner);
             resetUFToNow();
@@ -377,41 +319,64 @@ public:
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
-        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
         _root->parent = nullptr;
+        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
 
         return {best->moveRow, best->moveCol};
     }
 
-//===============================================
-    void printState() {
-        UnionFind uf(_taille);
-
-        for(auto [row,col,pl] : _historique_coups){
-            uf.applyMoveUF(row,col,pl);
-        }
-        std::cerr << "\nTABLE DE JEU_HEX APRES LE COUP DU JOUEUR : " << ((_player == 'X') ? 'O' : 'X') << std::endl;
-        uf.printBoardUF();
-
-    }
-//===============================================
 private:
-    void getAllMovesPlayed(Node* node, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played , std::vector<std::tuple<int,int, char>>& moves_played_from_root){
-        Node* current = node;
-        for (auto &h : _historique_coups) {
-            all_moves_played.push_back(h);
-        }
+    void getAllMoves(Hex_Environement& hex) {
+        /**
+         * Fonction qui recupere tout les coups valides restant
+         * dans la partie et les mets à jours au noeud racine.
+         * 
+         * Heuristique: Les coups sont mis dans le tableau en ordre  
+         * croissant de la distance de Manhattan entre les coups 
+         * et le centre. Cela permets de parcourir les expansions initiales
+         * du centre vers les extremités.
+        */
+        std::vector<int> first_moves;
+        std::vector<int> second_moves;
+        std::vector<int>  third_moves;
+        std::vector<int>  fourth_moves;
 
-        while (current->parent != nullptr) {
-            moves_played_from_root.push_back({current->moveRow, current->moveCol, current->playerJustMoved});
-            current = current->parent;
+        for(unsigned int i=0; i < _taille; i++) {
+            for(unsigned int j = 0; j< _taille; j++) {
+                if(hex.isValidMove(i,j)) {
+                    int distance = distanceToCenter(i,j,_taille);
+                    if (distance <=1) first_moves.push_back(convertCoordonateToID(i,j));
+                    else if (distance <=3) second_moves.push_back(convertCoordonateToID(i,j));
+                    else if (distance <=5) third_moves.push_back(convertCoordonateToID(i,j));
+                    else fourth_moves.push_back(convertCoordonateToID(i,j));
+                }
+            }
         }
-        std::reverse(moves_played_from_root.begin(), moves_played_from_root.end());
+        _root->untriedMoves = std::move(first_moves);
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(second_moves.begin()),
+            std::make_move_iterator(second_moves.end())
+        );
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(third_moves.begin()),
+            std::make_move_iterator(third_moves.end())
+        );
+        _root->untriedMoves.insert(
+            _root->untriedMoves.end(),
+            std::make_move_iterator(fourth_moves.begin()),
+            std::make_move_iterator(fourth_moves.end())
+        );
 
-        all_moves_played.insert(all_moves_played.end(), moves_played_from_root.begin(), moves_played_from_root.end());
+        _root->toVisit = _root->untriedMoves;
     }
-    
+
     void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int>& played_moves){
+        /**
+         * Fonction qui simule une partie jusqu'a ce qu'il y ai un gagnant. 
+         * La structure unionFind(_uf) simule l'etat du jeu
+        */
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
@@ -422,7 +387,6 @@ private:
             _uf.applyMoveUF(move.first, move.second, pl);
         }while (!_uf.hasWinner(pl));
 
-
         if (!_uf.hasWinner('X') && !_uf.hasWinner('O')){
             _uf.printBoardUF();
             std::cerr << "Erreur: available list est vide\n";
@@ -430,24 +394,14 @@ private:
         }
     }
 
-    void getAvailableMoves(Node* node, std::vector<std::pair<int, int>>& available_moves, std::vector< std::tuple<unsigned int, unsigned int, char> >& all_moves_played){
-        
-        for (const auto &id : node->toVisit){
-            auto move = convertIDToCoordonate(id);
-            if(_uf.isValidMoveUF(move.first, move.second)){
-                available_moves.push_back(move);
-            }else {
-                _uf.printBoardUF();
-                std::cerr << "Le coup invalide est [" << move.first << "," << move.second << "]\n" << std::endl;
-                std::cerr << "Le UF contient\n" << std::endl;
-                for (auto [row,col,pl]: all_moves_played){
-                    std::cerr << "[" << row << "," << col << "]\n" << std::endl;
-                }
-            }
-        }
-    }
-
     Node* FindBestChild(Node* node) {
+        /**
+         * Retourne le noeud le plus prometteurs
+         * 
+         * Le noeud le plus visité. Lorsque plusieurs noeud
+         * ont le même nombre de visite, on compare leurs 
+         * nombre de victoire
+        */
         Node* best = nullptr;
         int maxVisits = -1;
         double bestWinrate = -1.0;
@@ -469,56 +423,13 @@ private:
         return best;
     }
 
-    void getAllMoves(Hex_Environement& hex) {
-        std::vector<int> first_moves;
-        std::vector<int> second_moves;
-        std::vector<int>  third_moves;
-        std::vector<int>  fourth_moves;
-
-        for(unsigned int i=0; i < _taille; i++) {
-            for(unsigned int j = 0; j< _taille; j++) {
-                if(hex.isValidMove(i,j)) {
-                    int distance = distanceToCenter(i,j,_taille);
-                    if (distance <=1) first_moves.push_back(convertCoordonateToID(i,j));
-                    else if (distance <=3) second_moves.push_back(convertCoordonateToID(i,j));
-                    else if (distance <=5) third_moves.push_back(convertCoordonateToID(i,j));
-                    else fourth_moves.push_back(convertCoordonateToID(i,j));
-                }
-            }
-        }
-        _root->untriedMoves = std::move(first_moves);
-
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(second_moves.begin()),
-            std::make_move_iterator(second_moves.end())
-        );
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(third_moves.begin()),
-            std::make_move_iterator(third_moves.end())
-        );
-        _root->untriedMoves.insert(
-            _root->untriedMoves.end(),
-            std::make_move_iterator(fourth_moves.begin()),
-            std::make_move_iterator(fourth_moves.end())
-        );
-
-        _root->toVisit = _root->untriedMoves;
-    }
-
     int distanceToCenter(int r, int c, int N) {
+        /**
+         * Fonction calcul la distance de Manhattan 
+         * d'une position au centre de la table de jeu
+        */
         int center = N / 2;
         return std::abs(r - center) + std::abs(c - center);
-    }
-
-    std::pair<double, double> getPositionRatio(int r, int c) {
-        double radius = (_taille % 2 == 0) ? (_taille /2) : (_taille/2 + 0.5);
-
-        double row_position_ratio = (r < radius) ? (radius - r) : (r - radius);
-        double col_position_ratio = (c < radius) ? (radius - c) : (c - radius);
-        
-        return {row_position_ratio/radius, col_position_ratio/radius};
     }
 
     int convertCoordonateToID(int r, int c) {
@@ -538,14 +449,27 @@ private:
     }
 
     void resetUFToNow(){
+        /**
+         * Fonction qui remet à zéro la structure unionFind
+         * et ensuite la mets à jours avec l'historiques de
+         * coups courant.
+        */
         _uf.reset();
         for(const auto& [r,c,pl]: _historique_coups) {
             _uf.applyMoveUF(r,c,pl);
             }
     }
 
-    void raveSimulationUpdate(Node* node, std::vector<int>& played_moves, char winner) {
-        for (auto id : played_moves) {
+    void raveSimulationUpdate(Node* node, std::vector<int>& move_played_in_simulation, char winner) {
+        /**
+         * Fonction parcourt les coups possible du noeud courant 
+         * et verifie si le même coup est joué à un moment ou un 
+         * autre de la simulation et si le coup a mené à la victoire.
+         * 
+         * Si oui dans un ou l'autre des cas on rajoute de la valeurs au
+         * coup pour la sélection
+        */
+        for (auto id : move_played_in_simulation) {
             auto move = convertIDToCoordonate(id);
             for (auto child : node->children) {
                 if (child->moveRow == move.first && child->moveCol == move.second) {
