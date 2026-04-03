@@ -210,14 +210,12 @@ private:
         int visits = 0;
         double wins = 0;
 
-        //Rave
-        int rave_visits = 0;
-        double rave_wins = 0;
 
         std::vector<int> toVisit;
         std::vector<int> untriedMoves;
     };   
     Node* _root = nullptr;
+
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
@@ -226,22 +224,18 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            std::cout << "NPS1 = " << std::endl;
-            double exploitation_S_i = child->wins / (child->visits);
-            double exploration_S_i = C * sqrt(log(node->visits) / (child->visits));
-            std::cout << "NPS2 = " << std::endl;
-            double rave_ratio = child->rave_wins/(child->rave_visits +1e-6);
-            double w = ( child->rave_visits/(child->visits + child->rave_visits + 1e-6) );
-            double score = ((1 - w)*exploitation_S_i) + (w * rave_ratio) + exploration_S_i; 
-            std::cout << "NPS3 = " << std::endl;
-            if (score > bestValue) 
+            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits) / (child->visits + 1e-6));   //log(1) = 0
+
+            if (uct > bestValue) 
             {
-                bestValue = score;
+                bestValue = uct;
                 best = child;
             }
         }
-        std::cout << "NPS4 = " << std::endl;
+        // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
+        //std::cerr << "\nla profondeur est : " << best->depth << std::endl;
+
         return best;
     }
    
@@ -285,19 +279,14 @@ private:
 
         std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
         std::vector<std::tuple<int,int, char>> moves_played_from_root;
-        std::vector<int> played_moves;
+        std::vector<int> available_moves;
         char pl = node->playerJustMoved;
 
         if (node->toVisit.empty()) {
             return node->playerJustMoved;
         }
 
-        //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
-        //simulateToThePresent(all_moves_played);
-        //getAvailableMoves(node, available_moves, all_moves_played);
-
-        simulateToTheEnd(pl,node->toVisit, played_moves);
-        raveSimulationUpdate(node, played_moves, pl);
+        simulateToTheEnd(pl,node->toVisit);
         return pl;
     }
 
@@ -340,18 +329,13 @@ public:
                 }
             }
             _root = nullptr; 
-            // On met a jour la carte _uf[O(n)]
-            _uf.reset();
-            for(const auto& [r,c,pl]: _historique_coups) {
-                _uf.applyMoveUF(r,c,pl);
-            }
-
+            resetUFToNow();
         }
     }
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         auto start = std::chrono::steady_clock::now();
-        std::cout << "NPS1 = " << std::endl;
+
         if(_root == nullptr) {
             _root = new Node();
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
