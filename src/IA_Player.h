@@ -388,7 +388,6 @@ private:
         }while (!_uf.hasWinner(pl));
 
         if (!_uf.hasWinner('X') && !_uf.hasWinner('O')){
-            _uf.printBoardUF();
             std::cerr << "Erreur: available list est vide\n";
             std::exit(EXIT_FAILURE);
         }
