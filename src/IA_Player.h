@@ -167,7 +167,7 @@ private:
          *  Upper Confidence Trees (UCT)
          *  RAVE (Rapid Action Value Estimation)
         */
-        double C = 0.95;
+        double C = 1.414;
         Node* best = nullptr;
         double bestValue = -1e9;
 
