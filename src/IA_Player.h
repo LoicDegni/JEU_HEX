@@ -210,6 +210,9 @@ private:
         int visits = 0;
         double wins = 0;
 
+        //Rave
+        int rave_visits = 0;
+        double rave_wins = 0;
 
         std::vector<int> toVisit;
         std::vector<int> untriedMoves;
@@ -223,18 +226,18 @@ private:
         double bestValue = -1e9;
 
         for(auto child: node->children) {
-            double uct = (child->wins / (child->visits + 1e-6)) + C * sqrt(log(node->visits) / (child->visits + 1e-6));
-
-            if (uct > bestValue) 
+            double exploitation_S_i = child->wins / (child->visits);
+            double exploration_S_i = C * sqrt(log(node->visits) / (child->visits));
+            double rave_ratio = child->rave_wins/(child->rave_visits +1e-6);
+            double w = ( child->rave_visits/(child->visits + child->rave_visits + 1e-6) );
+            double score = ((1 - w)*exploitation_S_i) + (w * rave_ratio) + exploration_S_i; 
+            if (score > bestValue) 
             {
-                bestValue = uct;
+                bestValue = score;
                 best = child;
             }
         }
-        // On met a jour la carte _uf[O(n)]
         _uf.applyMoveUF(best->moveRow, best->moveCol, best->playerJustMoved);
-        //std::cerr << "\nla profondeur est : " << best->depth << std::endl;
-
         return best;
     }
    
@@ -275,13 +278,22 @@ private:
     }
 
     char simulate(Node* node) {
+
+        std::vector< std::tuple<unsigned int, unsigned int, char> > all_moves_played;
+        std::vector<std::tuple<int,int, char>> moves_played_from_root;
+        std::vector<int> played_moves;
         char pl = node->playerJustMoved;
 
         if (node->toVisit.empty()) {
             return node->playerJustMoved;
         }
 
-        simulateToTheEnd(pl,node->toVisit);
+        //getAllMovesPlayed(node, all_moves_played, moves_played_from_root);
+        //simulateToThePresent(all_moves_played);
+        //getAvailableMoves(node, available_moves, all_moves_played);
+
+        simulateToTheEnd(pl,node->toVisit, played_moves);
+        raveSimulationUpdate(node, played_moves, pl);
         return pl;
     }
 
@@ -335,7 +347,7 @@ public:
 
     std::tuple<int, int> getMove(Hex_Environement& hex) override {
         auto start = std::chrono::steady_clock::now();
-
+        std::cout << "NPS1 = " << std::endl;
         if(_root == nullptr) {
             _root = new Node();
             _root->playerJustMoved = (_player == 'X') ? 'O' : 'X';
@@ -363,12 +375,10 @@ public:
             backpropagate(node,winner);
             resetUFToNow();
         }
-        //std::cout << "NPS = " << simulation / seconds << std::endl;
-
         Node* best = FindBestChild(_root);
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
-        //std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
+        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
         _root->parent = nullptr;
 
         return {best->moveRow, best->moveCol};
@@ -402,19 +412,14 @@ private:
         all_moves_played.insert(all_moves_played.end(), moves_played_from_root.begin(), moves_played_from_root.end());
     }
     
-    void simulateToThePresent(std::vector<std::tuple<unsigned int, unsigned int, char>>& all_moves_played) {
-        for(auto [row,col,pl] : all_moves_played){
-            _uf.applyMoveUF(row,col,pl);
-        }
-    }
-
-    void simulateToTheEnd(char& pl, std::vector<int>& available_moves){
+    void simulateToTheEnd(char& pl, std::vector<int>& available_moves, std::vector<int>& played_moves){
         do {
             pl = (pl == 'X') ? 'O' : 'X';
             std::uniform_int_distribution<int> uniform_moves_distribution(0, available_moves.size() -1);
             int random_index = uniform_moves_distribution(_random_number_generator);
             auto id = available_moves[random_index];
             auto move = convertIDToCoordonate(id);
+            played_moves.push_back(id);
             _uf.applyMoveUF(move.first, move.second, pl);
         }while (!_uf.hasWinner(pl));
 
@@ -517,42 +522,6 @@ private:
         return {row_position_ratio/radius, col_position_ratio/radius};
     }
 
-    bool isCenter(int r, int c) {
-        /**
-         * Retourne vrai si la position est inferieur 
-         * à 20% de la moitié de la longueur(dans le centre)
-        */
-        auto position = getPositionRatio(r,c);
-        return position.first <= 0.1 && position.second <=0.1 ; 
-    }
-  
-    bool isInnerSection(int r, int c) {
-        /**
-         * Retourne vrai si la position est entre 20% et 50% de la moitié 
-         * de la longueur(dans le centre)
-        */
-        auto position = getPositionRatio(r,c);
-        return (position.first > 0.1 && position.first <=0.5) &&(position.second > 0.1 && position.second <=0.5)  ; 
-    }
-  
-    bool isOuterSection(int r, int c) {
-        /**
-         * Retourne vrai si la position est entre 50% et 80% de la moitié 
-         * de la longueur(dans le centre)
-        */
-        auto position = getPositionRatio(r,c);
-        return (position.first > 0.5 && position.first <=0.8) &&(position.second > 0.5 && position.second <=0.8)  ; 
-    }
-
-    bool isBorder(int r, int c) {
-        /**
-         * Retourne vrai si la position est supérieur 
-         * à 80% de la moitié de la longueur(dans le centre)
-        */
-        auto position = getPositionRatio(r,c);
-        return position.first > 0.8 && position.second >0.8 ;  
-    }
-
     int convertCoordonateToID(int r, int c) {
         /**
          * Fonction qui convertit une coordonne(r,c)
@@ -574,5 +543,17 @@ private:
         for(const auto& [r,c,pl]: _historique_coups) {
             _uf.applyMoveUF(r,c,pl);
             }
+    }
+
+    void raveSimulationUpdate(Node* node, std::vector<int>& played_moves, char winner) {
+        for (auto id : played_moves) {
+            auto move = convertIDToCoordonate(id);
+            for (auto child : node->children) {
+                if (child->moveRow == move.first && child->moveCol == move.second) {
+                    child->rave_visits++;
+                    if (child->playerJustMoved == winner) child->rave_wins++;
+                }
+            }
+        }
     }
 };
