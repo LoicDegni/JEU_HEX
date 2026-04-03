@@ -221,7 +221,7 @@ private:
 
 //-------------------ALGO MCTS-------------------//
     Node* select(Node* node) {
-        double C = 1.22;
+        double C = 1.0;
         Node* best = nullptr;
         double bestValue = -1e9;
 
