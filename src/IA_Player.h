@@ -574,16 +574,5 @@ private:
             }
     }
 
-    void raveSimulationUpdate(Node* node, std::vector<int>& played_moves, char winner) {
-        for (auto id : played_moves) {
-            auto move = convertIDToCoordonate(id);
-            for (auto child : node->children) {
-                if (child->moveRow == move.first && child->moveCol == move.second) {
-                    child->rave_visits++;
-                    if (child->playerJustMoved == winner) child->rave_wins++;
-                }
-            }
-        }
-    }
 };
 
