@@ -320,7 +320,7 @@ public:
         _historique_coups.push_back({best->moveRow,  best->moveCol, _player});
         _root = best;
         _root->parent = nullptr;
-        std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
+        //std::shuffle(_root->children.begin(), _root->children.end(), _random_number_generator);
 
         return {best->moveRow, best->moveCol};
     }
